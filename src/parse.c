@@ -77,6 +77,7 @@ ParseProgram(Parser *p)
 {
     Ast *fn = ParseFunction(p);
     ExpectAst(fn, p, AST_FUNCTION);
+    ExpectAndConsumeToken(p, TOK_EOF);
     return NewAstProgram(p->arena, fn);
 }
 
@@ -203,7 +204,7 @@ CheckParseType(char *text, char *source)
 
     Ast *program = ParseProgram(&p);
     assert(program);
-    PrintParseError(stdout, &p, program);
+    //PrintParseError(stdout, &p, program);
     AstType result = program->type;
     FreeArena(&arena);
     return result;
@@ -212,11 +213,65 @@ CheckParseType(char *text, char *source)
 
 void test_parser_1_invalid(void)
 {    
-    char *text =
+    char *text[] = {
 "int main(void) {\n"
-"    return\n";
-    AstType tp = CheckParseType(text, "text1");
-    assert(tp == AST_ERR);
+"    return\n",
+
+"int main(void)\n"
+"{\n"
+"    return 2;\n"
+"}\n"
+"\n"
+"foo\n",
+
+"int 3 (void) {\n"
+"    return 0;\n"
+"}\n",
+
+"int main(void) {\n"
+"    RETURN 0;\n"
+"}\n",
+
+"main(void) {\n"
+"    return 0;\n"
+"}\n",
+
+"int main(void) {\n"
+"    returns 0;\n"
+"}\n",
+
+"int main (void) {\n"
+"    return 0\n"
+"}\n",
+
+"int main(void) {\n"
+"    return int;\n"
+"}\n",
+
+"int main(void){\n"
+"    retur n 0;\n"
+"}\n",
+
+"int main )( {\n"
+"    return 0;\n"
+"}\n",
+
+"int main(void) {\n"
+"    return 0;\n",
+
+"int main( {\n"
+"    return 0;\n"
+"}\n",
+    };
+
+    for_array(i,text) {
+        AstType tp = CheckParseType(text[i], "text1");
+        if (tp != AST_ERR) {
+            fprintf(stderr, "file %llu parsed, and it shouldn't\n", i);
+            assert(tp == AST_PROGRAM);
+        }
+        assert(tp == AST_ERR);
+    }
 }
 
 #endif

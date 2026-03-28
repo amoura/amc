@@ -4,15 +4,15 @@
 struct {
     char *lit;
     char *str;
-    TokenType type;
+    token_type type;
 } keywords[] = {
     {"int", NULL, TOK_INT},
     {"void", NULL, TOK_VOID},
     {"return", NULL, TOK_RETURN}
 };
 
-TokenType
-TokenTypeOfStr(char *str)
+token_type
+token_type_of_str(char *str)
 {
     for_array(i, keywords) {
         if (keywords[i].str == str) {
@@ -22,30 +22,30 @@ TokenTypeOfStr(char *str)
     return TOK_ID;
 }
 
-Token
-MakeSimpleToken(TokenType type, u64 pos)
+token
+make_simple_token(token_type type, u64 pos)
 {
-    Token tok = {0};
+    token tok = {0};
     tok.type = type;
     tok.pos = pos;
     return tok;
 }
 
 // We assume ID has been interned
-Token
-MakeIdToken(char *id, u64 pos)
+token
+make_id_token(char *id, u64 pos)
 {
-    Token tok = {0};
+    token tok = {0};
     tok.type = TOK_ID;
     tok.pos = pos;
     tok.str_val = id;
     return tok;
 }
 
-Token
-MakeIntToken(int value, u64 pos)
+token
+make_int_token(int value, u64 pos)
 {
-    Token tok = {0};
+    token tok = {0};
     tok.type = TOK_INT_LIT;
     tok.pos = pos;
     tok.int_val = value;
@@ -53,7 +53,7 @@ MakeIntToken(int value, u64 pos)
 }
 
 bool
-TokenEq(Token a, Token b)
+token_eq(token a, token b)
 {
     if (a.type != b.type) {
         return false;
@@ -72,7 +72,7 @@ TokenEq(Token a, Token b)
 }
 
 const char *
-TokenTypeToMsg(TokenType type)
+token_type_to_msg(token_type type)
 {
     switch (type) {
         case TOK_OPEN_PAR:
@@ -104,10 +104,10 @@ TokenTypeToMsg(TokenType type)
     return NULL;
 }
 
-Lexer
-MakeLexer(char *text, char *source, u64 len, StrStore *st)
+lexer
+make_lexer(char *text, char *source, u64 len, str_store *st)
 {
-    Lexer lex = {0};
+    lexer lex = {0};
     lex.text = text;
     lex.source = source;
     lex.len = len;
@@ -115,7 +115,7 @@ MakeLexer(char *text, char *source, u64 len, StrStore *st)
     lex.st = st;
 
     for_array(i, keywords) {
-        char *str = InternStr(st, keywords[i].lit);
+        char *str = intern_str(st, keywords[i].lit);
         keywords[i].str = str;
     }
 
@@ -123,43 +123,43 @@ MakeLexer(char *text, char *source, u64 len, StrStore *st)
 }
 
 u64
-LexerPos(Lexer *lex)
+lexer_pos(lexer *lex)
 {
     return lex->pos;
 }
 
 bool
-LexerInBounds(Lexer *lex)
+lexer_in_bounds(lexer *lex)
 {
     return lex->pos <= lex->len;
 }
 
 bool
-LexerAtEOF(Lexer *lex)
+lexer_at_eof(lexer *lex)
 {
-    assert(LexerInBounds(lex));
+    assert(lexer_in_bounds(lex));
     return lex->pos == lex->len;
 }
 
 char
-CurrChar(Lexer *lex)
+curr_char(lexer *lex)
 {
-    assert(LexerInBounds(lex));
+    assert(lexer_in_bounds(lex));
     return lex->text[lex->pos];
 }
 
 void
-SkipWhitespace(Lexer *lex)
+skip_whitespace(lexer *lex)
 {
-    while (LexerInBounds(lex) && isspace(CurrChar(lex))) {
+    while (lexer_in_bounds(lex) && isspace(curr_char(lex))) {
         lex->pos++;
     }
 }
 
-TextPos
-CurrTextPos(Lexer *lex)
+text_pos
+curr_text_pos(lexer *lex)
 {
-    assert(LexerInBounds(lex));
+    assert(lexer_in_bounds(lex));
     u64 pos = 0;
     u32 line = 1;
     u32 col = 1;
@@ -172,14 +172,14 @@ CurrTextPos(Lexer *lex)
         }
         pos++;
     }
-    TextPos text_pos = {0};
+    text_pos text_pos = {0};
     text_pos.line = line;
     text_pos.col = col;
     return text_pos;
 }
 
 char *
-FindNthLine(char *text, int line_num)
+find_nth_line(char *text, int line_num)
 {
     for (size_t line=1; *text && line<line_num; text++) {
         if (*text == '\n') {
@@ -190,13 +190,13 @@ FindNthLine(char *text, int line_num)
 }
 
 void
-PrintTextRange(FILE *stream, char *beg, char *end)
+print_text_range(FILE *stream, char *beg, char *end)
 {
     fwrite(beg, end-beg, 1, stream);
 }
 
 void
-PrintNChars(FILE *stream, int n, char c)
+print_n_chars(FILE *stream, int n, char c)
 {
     for_i(int,i,n) {
         fputc(c, stream);
@@ -204,31 +204,31 @@ PrintNChars(FILE *stream, int n, char c)
 }
 
 void
-PrintErrorLocation(FILE *stream, char *text, 
+print_error_location(FILE *stream, char *text, 
         int start_line, int end_line,  size_t col)
 {
     if (start_line < 1) {
         start_line = 1;
     }
-    char *beg = FindNthLine(text, start_line);
-    char *end = FindNthLine(beg, end_line-start_line+1);
-    PrintTextRange(stream, beg, end);
+    char *beg = find_nth_line(text, start_line);
+    char *end = find_nth_line(beg, end_line-start_line+1);
+    print_text_range(stream, beg, end);
     fputc('\n', stream);
-    PrintNChars(stream, col-1, '-');
+    print_n_chars(stream, col-1, '-');
     fprintf(stream, "^\n");
 }
 
 void
-LexerError(Lexer *lex, char *msg)
+lexer_error(lexer *lex, char *msg)
 {
-    TextPos text_pos = CurrTextPos(lex);
+    text_pos text_pos = curr_text_pos(lex);
     fprintf(stderr, "%s:%d:%d: lexer error: %s\n",
             lex->source, text_pos.line, text_pos.col, msg);
     exit(1);
 }
 
 bool
-InnerWordChar(char c)
+inner_word_char(char c)
 {
     switch (c) {
         case 'a': case 'b': case 'c': case 'd': case 'e':
@@ -253,17 +253,17 @@ InnerWordChar(char c)
 }
  
 
-Token
-NextToken(Lexer *lex)
+token
+next_token(lexer *lex)
 {
-    Token tok = MakeSimpleToken(TOK_NONE, lex->pos);
-    SkipWhitespace(lex);
-    assert(LexerInBounds(lex));
-    if (LexerAtEOF(lex)) {
-        return MakeSimpleToken(TOK_EOF, lex->pos);
+    token tok = make_simple_token(TOK_NONE, lex->pos);
+    skip_whitespace(lex);
+    assert(lexer_in_bounds(lex));
+    if (lexer_at_eof(lex)) {
+        return make_simple_token(TOK_EOF, lex->pos);
     }
 
-    switch (CurrChar(lex)) {
+    switch (curr_char(lex)) {
         case '(':
             tok.type = TOK_OPEN_PAR;
             lex->pos++;
@@ -292,8 +292,8 @@ NextToken(Lexer *lex)
         case '1': case '2': case '3': case '4': case '5':
         case '6': case '7': case '8': case '9': case '0': {
             int value = 0;
-            while (LexerInBounds(lex) && isdigit(CurrChar(lex))) {
-                int new_value = value*10 + (int)(CurrChar(lex) - '0');
+            while (lexer_in_bounds(lex) && isdigit(curr_char(lex))) {
+                int new_value = value*10 + (int)(curr_char(lex) - '0');
                 if (new_value < value) {
                     tok.type = TOK_ERR;
                     tok.str_val = "integer literal overflow";
@@ -302,7 +302,7 @@ NextToken(Lexer *lex)
                 value = new_value;
                 lex->pos++;
             }
-            if (LexerInBounds(lex) && InnerWordChar(CurrChar(lex))) {
+            if (lexer_in_bounds(lex) && inner_word_char(curr_char(lex))) {
                 tok.type = TOK_ERR;
                 tok.str_val = "ill-formed numerical literal: expected whitespace";
             } else {
@@ -325,11 +325,11 @@ NextToken(Lexer *lex)
         case 'Z': 
         case '_': {
             u64 pos0 = lex->pos;
-            while (LexerInBounds(lex) && InnerWordChar(CurrChar(lex))) {
+            while (lexer_in_bounds(lex) && inner_word_char(curr_char(lex))) {
                 lex->pos++;
             }
-            char *str = InternStrN(lex->st, lex->text+pos0, lex->pos-pos0);
-            TokenType type = TokenTypeOfStr(str);
+            char *str = intern_str_n(lex->st, lex->text+pos0, lex->pos-pos0);
+            token_type type = token_type_of_str(str);
             tok.type = type;
             if (type == TOK_ID) {
                 tok.str_val = str;
@@ -353,16 +353,16 @@ NextToken(Lexer *lex)
 #ifdef TESTING
 
 bool
-IsNextToken(Lexer *lex, Token tok)
+is_next_token(lexer *lex, token tok)
 {
-    Token next_tok = NextToken(lex);
-    return TokenEq(next_tok, tok);
+    token next_tok = next_token(lex);
+    return token_eq(next_tok, tok);
 }
 
 void
-RequireNextToken(Lexer *lex, Token tok)
+require_next_token(lexer *lex, token tok)
 {
-    assert(IsNextToken(lex, tok));
+    assert(is_next_token(lex, tok));
 }
 
 void test_lexer_1()
@@ -372,62 +372,62 @@ void test_lexer_1()
         "    return 102;\n"
         "}\n";
 
-    Arena arena = MakeArena(Mb(8));
-    StrStore st = MakeStrStore(&arena, Mb(2), 101);
-    Lexer lex = MakeLexer(text, "tst.c", strlen(text), &st);
+    arena ar = make_arena(Mb(8));
+    str_store st = make_str_store(&ar, Mb(2), 101);
+    lexer lex = make_lexer(text, "tst.c", strlen(text), &st);
 
-    Token tok = NextToken(&lex);
+    token tok = next_token(&lex);
     assert(tok.type == TOK_INT);
     
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_ID);
-    assert(StrEq(tok.str_val, "main"));
+    assert(str_eq(tok.str_val, "main"));
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_OPEN_PAR);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_VOID);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_CLOSE_PAR);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_OPEN_BRACE);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_RETURN);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_INT_LIT);
     assert(tok.int_val == 102);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_SEMICOLON);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_CLOSE_BRACE);
 
-    tok = NextToken(&lex);
+    tok = next_token(&lex);
     assert(tok.type == TOK_EOF);
 
-    FreeArena(&arena);
+    free_arena(&ar);
 }
 
 void
-CheckLexing(char *text, TokenType *types, u64 num_tokens)
+check_lexing(char *text, token_type *types, u64 num_tokens)
 {
-    Arena arena = MakeArena(Mb(8));
-    StrStore st = MakeStrStore(&arena, Mb(2), 101);
-    Lexer lex = MakeLexer(text, "tst.c", strlen(text), &st);
+    arena ar = make_arena(Mb(8));
+    str_store st = make_str_store(&ar, Mb(2), 101);
+    lexer lex = make_lexer(text, "tst.c", strlen(text), &st);
 
     u64 i = 0;
-    Token tok = {0};
+    token tok = {0};
     do {
-        tok = NextToken(&lex);
+        tok = next_token(&lex);
         if (tok.type != types[i]) {
             fprintf(stderr, "token %llu: found %s, should be %s\n",
-                    i, TokenTypeToStr(tok.type), TokenTypeToStr(types[i]));
+                    i, token_type_to_str(tok.type), token_type_to_str(types[i]));
             exit(1);
         }
         i++;
@@ -439,19 +439,19 @@ CheckLexing(char *text, TokenType *types, u64 num_tokens)
         exit(1);
     }
 
-    FreeArena(&arena);
+    free_arena(&ar);
 }
 
 void
-CheckItDoesLex(char *text)
+check_it_does_lex(char *text)
 {
-    Arena arena = MakeArena(Mb(8));
-    StrStore st = MakeStrStore(&arena, Mb(2), 101);
-    Lexer lex = MakeLexer(text, "tst.c", strlen(text), &st);
+    arena ar = make_arena(Mb(8));
+    str_store st = make_str_store(&ar, Mb(2), 101);
+    lexer lex = make_lexer(text, "tst.c", strlen(text), &st);
 
-    Token tok = {0};
+    token tok = {0};
     do {
-        tok = NextToken(&lex);
+        tok = next_token(&lex);
     } while (tok.type!=TOK_EOF && tok.type!=TOK_ERR);
     if (tok.type != TOK_EOF) {
         assert(tok.type == TOK_ERR);
@@ -466,39 +466,39 @@ void test_lexer_1_invalid(void)
         "int main(void) {\n"
         "return 0@1;\n"
         "}\n";
-    TokenType types[] = {
+    token_type types[] = {
         TOK_INT, TOK_ID, TOK_OPEN_PAR, TOK_VOID, TOK_CLOSE_PAR, TOK_OPEN_BRACE,
         TOK_RETURN, TOK_INT_LIT, TOK_ERR
     };
-    CheckLexing(text, types, ArrayLen(types));
+    check_lexing(text, types, array_len(types));
 
     text = "\n\\";
-    TokenType tps[] = {TOK_ERR};
-    CheckLexing(text, tps, ArrayLen(tps));
+    token_type tps[] = {TOK_ERR};
+    check_lexing(text, tps, array_len(tps));
 
     text = "\n`";
-    CheckLexing(text, tps, ArrayLen(tps));
+    check_lexing(text, tps, array_len(tps));
 
     text =
         "int main(void) {\n"
         "return 1foo;\n"
         "}\n";
-    TokenType tps1[] = {
+    token_type tps1[] = {
         TOK_INT, TOK_ID, TOK_OPEN_PAR, TOK_VOID, TOK_CLOSE_PAR, TOK_OPEN_BRACE,
         TOK_RETURN, TOK_ERR
     };
-    CheckLexing(text, tps1, ArrayLen(tps1));
+    check_lexing(text, tps1, array_len(tps1));
 
     text =
         "int main(void)\n"
         "{\n"
         "    return @b;\n"
         "}";
-    TokenType tps2[] = {
+    token_type tps2[] = {
         TOK_INT, TOK_ID, TOK_OPEN_PAR, TOK_VOID, TOK_CLOSE_PAR, TOK_OPEN_BRACE,
         TOK_RETURN, TOK_ERR
     };
-    CheckLexing(text, tps2, ArrayLen(tps2));
+    check_lexing(text, tps2, array_len(tps2));
 }
 
 void test_lexer_1_valid(void)
@@ -514,18 +514,18 @@ void test_lexer_1_valid(void)
         "0\n"
         ";\n"
         "}       \n";
-    CheckItDoesLex(text);
+    check_it_does_lex(text);
 
     text = "int main(void){return 0;}";
-    CheckItDoesLex(text);
+    check_it_does_lex(text);
 
-    CheckItDoesLex(
+    check_it_does_lex(
         "int main(void) {\n"
         "    return 0;\n"
         "}\n");
 
-    CheckItDoesLex("int   main    (  void)  {   return  0 ; }");
-    CheckItDoesLex("int	main	(	void)	{	return	0	;	}");
+    check_it_does_lex("int   main    (  void)  {   return  0 ; }");
+    check_it_does_lex("int	main	(	void)	{	return	0	;	}");
 }
 
 

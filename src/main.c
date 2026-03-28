@@ -1,8 +1,10 @@
 #define STB_DS_IMPLEMENTATION
-#include "stb_ds.h"
+#define STBDS_REALLOC   arena_realloc
+#define STBDS_FREE      arena_noop
 
 #include "common.h"
 #include "mem.h"
+#include "am_stb_ds.h"
 #include "str.h"
 #include "lex.h"
 #include "ast.h"
@@ -19,7 +21,7 @@
 int
 main(void)
 {
-    // Version 0.1
+    // version 0.1
     test_str_buffer();
     test_str_store();
     test_lexer_1();

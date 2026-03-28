@@ -2,41 +2,41 @@ typedef struct {
     char *buffer;
     u64 pos;
     u64 size;
-} StrBuffer;
+} str_buffer;
 
-typedef struct StrNode {
-    struct StrNode *next;
+typedef struct str_node {
+    struct str_node *next;
     char *str;
-} StrNode;
+} str_node;
 
 typedef struct {
-    StrBuffer strs;
-    StrNode **table;
+    str_buffer strs;
+    str_node **table;
     u64 num_buckets;
-    Arena arena;
-} StrStore;
+    arena ar;
+} str_store;
 
 
-StrBuffer
-MakeStrBuffer(Arena *arena, u64 size);
+str_buffer
+make_str_buffer(arena *ar, u64 size);
 
 bool
-StrFitsInBuffer(StrBuffer *strb, u64 len);
+str_fits_in_buffer(str_buffer *strb, u64 len);
 
 char *
-AppendStrToBuffer(StrBuffer *strb, char *str, u64 len);
+append_str_to_buffer(str_buffer *strb, char *str, u64 len);
 
-StrStore
-MakeStrStore(Arena *arena, u64 buffer_size, u64 num_buckets);
-
-char *
-InternStrN(StrStore *st, char *str, u64 len);
+str_store
+make_str_store(arena *ar, u64 buffer_size, u64 num_buckets);
 
 char *
-InternStr(StrStore *st, char *str);
+intern_str_n(str_store *st, char *str, u64 len);
 
 char *
-FindStoredStrN(StrStore *st, char *str, u64 len);
+intern_str(str_store *st, char *str);
 
 char *
-FindStoredStr(StrStore *st, char *str);
+find_stored_str_n(str_store *st, char *str, u64 len);
+
+char *
+find_stored_str(str_store *st, char *str);

@@ -8,60 +8,60 @@ typedef struct {
     u64  	cap;
     u64  	pos;
     bool 	is_sub_arena;
-} Arena;
+} arena;
 
-Arena 	MakeArena(u64 		size);
-Arena 	MakeSubArena(Arena 	*super_arena,
+arena 	make_arena(u64 		size);
+arena 	make_sub_arena(arena 	*super_arena,
 		     u64	size);
-u64 	ArenaPos(Arena 		*arena);
-void 	ArenaPopToPos(Arena 	*arena,
+u64 	arena_pos(arena 		*ar);
+void 	arena_pop_to_pos(arena 	*ar,
 		      u64	pos);
-void * 	ArenaAlloc(Arena 	*arena,
+void * 	arena_alloc(arena 	*ar,
 		   u64 		nbytes);
-void 	ArenaReset(Arena 	*arena);
-void 	FreeArena(Arena 	*arena);
+void 	arena_reset(arena 	*ar);
+void 	free_arena(arena 	*ar);
 
-#define ArenaAllocType(a,T)		(T*) ArenaAlloc(a, sizeof(T))
-#define ArenaAllocTypeN(a,T,n)		(T*) ArenaAlloc(a, sizeof(T)*(n))
+#define arena_alloc_type(a,T)		(T*) arena_alloc(a, sizeof(T))
+#define arena_alloc_type_n(a,T,n)		(T*) arena_alloc(a, sizeof(T)*(n))
 
 
 //////////////////////////////////////////////////////////
-// For use wuth am_stb_ds
+// For use with am_stb_ds
 
 typedef struct {
     size_t size;
     u8 data[0];
-} MemBlock;
+} mem_block;
 
 void *
-ArenaRealloc(void *arena_ptr, void *ptr, size_t size);
+arena_realloc(void *ar_ptr, void *ptr, size_t size);
 
 void
-ArenaNoop(void *arena_ptr, void *ptr);
+arena_noop(void *ar_ptr, void *ptr);
 
 // If including am_stb_arr, add this before including it
 // to make it work with arenas:
 //
 //   #define STB_DS_IMPLEMENTATION
-//   #define STBDS_REALLOC   ArenaRealloc
-//   #define STBDS_FREE      ArenaNoop
+//   #define STBDS_REALLOC   arena_realloc
+//   #define STBDS_FREE      arena_noop
 
 #if 0
 ///////////////////////////////////////////////////////////
 // Dynamic array macros
 
-#define DefArr(T) \
+#define def_arr(T) \
     typedef struct {\
         size_t len;\
         size_t cap;\
         T *v;\
     } Join(T,Arr)
 
-#define ArrPush(arena,arr,elt) do {\
+#define arr_push(arena,arr,elt) do {\
     assert((arr).len <= (arr).cap);\
     if ((arr).len == (arr).cap) {\
         (arr).cap = 1 + 2*((arr).cap);\
-        void *ptr_ = ArenaAlloc(arena, (arr).cap * sizeof(*((arr).v)));\
+        void *ptr_ = arena_alloc(arena, (arr).cap * sizeof(*((arr).v)));\
         memmove(ptr_, (arr).v, (arr).len * sizeof(*((arr).v)));\
         (arr).v = ptr_;\
     }\

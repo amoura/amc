@@ -1,91 +1,88 @@
-#include "common.h"
-#include "mem.h"
-
-Arena
-MakeArena(u64	size)
+arena
+make_arena(u64	size)
 {
-    Arena arena = {0};
-    u64 actual_size = AlignUpPow2(size, 8);
-    arena.memory = (u8 *) calloc(1, actual_size);
-    assert(arena.memory);
-    assert(IsAlignedPow2(arena.memory, 8));
+    arena ar = {0};
+    u64 actual_size = align_up_pow2(size, 8);
+    ar.memory = (u8 *) calloc(1, actual_size);
+    assert(ar.memory);
+    assert(is_aligned_pow2(ar.memory, 8));
     
-    arena.cap = actual_size;
-    arena.pos = 0;
-    arena.is_sub_arena = false;
+    ar.cap = actual_size;
+    ar.pos = 0;
+    ar.is_sub_arena = false;
 
-    return arena;
+    return ar;
 }
 
-Arena
-MakeSubArena(Arena	*super_arena,
+arena
+make_sub_arena(arena	*super_ar,
 	     u64     	size)
 {
-    assert(super_arena);
+    assert(super_ar);
     
-    Arena sub_arena = {0};
-    u64 actual_size = AlignUpPow2(size, 8);
-    sub_arena.memory = ArenaAlloc(super_arena, actual_size);
-    assert(sub_arena.memory);
-    assert(IsAlignedPow2(sub_arena.memory, 8));
+    arena sub_ar = {0};
+    u64 actual_size = align_up_pow2(size, 8);
+    sub_ar.memory = arena_alloc(super_ar, actual_size);
+    assert(sub_ar.memory);
+    assert(is_aligned_pow2(sub_ar.memory, 8));
     
-    sub_arena.cap = actual_size;
-    sub_arena.pos = 0;
-    sub_arena.is_sub_arena = true;
+    sub_ar.cap = actual_size;
+    sub_ar.pos = 0;
+    sub_ar.is_sub_arena = true;
 
-    assert(super_arena->memory + super_arena->cap >=
-	   sub_arena.memory + sub_arena.cap);
-    return sub_arena;
+    assert(super_ar->memory + super_ar->cap >=
+	   sub_ar.memory + sub_ar.cap);
+    return sub_ar;
 }    
 
 void *
-ArenaAlloc(Arena	*arena,
+arena_alloc(arena	*ar,
 	   u64		nbytes)
 {
-    assert(arena);
+    assert(ar);
     assert(nbytes > 0);
     
-    u64 actual_nbytes = AlignUpPow2(nbytes, 8);
-    assert(actual_nbytes <= (arena->cap - arena->pos)); // TODO: should we return NULL?
-    u8 *result = arena->memory + arena->pos;
-    assert(IsAlignedPow2(result, 8));
-    arena->pos += actual_nbytes;
+    u64 actual_nbytes = align_up_pow2(nbytes, 8);
+    assert(actual_nbytes <= (ar->cap - ar->pos)); // TODO: should we return NULL?
+    u8 *result = ar->memory + ar->pos;
+    assert(is_aligned_pow2(result, 8));
+    ar->pos += actual_nbytes;
 
-    assert(arena->pos <= arena->cap);
+    assert(ar->pos <= ar->cap);
     return result;
 }
 
 u64
-ArenaPos(Arena	*arena)
+arena_pos(arena	*ar)
 {
-    assert(arena);
-    return arena->pos;
+    assert(ar);
+    return ar->pos;
 }
 
 void
-ArenaPopToPos(Arena 	*arena,
+arena_pop_to_pos(arena 	*ar,
 	      u64	pos)
 {
-    assert(arena);
-    assert(arena->pos >= pos);
-    arena->pos = pos;
+    assert(ar);
+    assert(ar->pos >= pos);
+    ar->pos = pos;
 }
 
 void
-ArenaReset(Arena	*arena)
+arena_reset(arena	*ar)
 {
-    assert(arena);
-    arena->pos = 0;
+    assert(ar);
+    ar->pos = 0;
 }
 
 void
-FreeArena(Arena	*arena)
+free_arena(arena	*ar)
 {
-    assert(arena);
-    if (! arena->is_sub_arena) {
-	free(arena->memory);
+    assert(ar);
+    if (! ar->is_sub_arena) {
+        free(ar->memory);
     }
-    *arena = (Arena) {0};
+    *ar = (arena) {0};
 }
 
 
@@ -93,24 +90,24 @@ FreeArena(Arena	*arena)
 // For integration with am_stb_ds.h
 
 void *
-ArenaRealloc(void *arena_ptr, void *ptr, size_t size)
+arena_realloc(void *ar_ptr, void *ptr, size_t size)
 {
-    Arena *arena = (Arena *) arena_ptr;
+    arena *ar = (arena *) ar_ptr;
     if (ptr == NULL) {
-        MemBlock *block = ArenaAlloc(arena, sizeof(MemBlock) + size);
+        mem_block *block = arena_alloc(ar, sizeof(mem_block) + size);
         block->size = size;
         return block->data;
     }
-    MemBlock *old_block = (MemBlock *)(ptr - OffsetOfMember(MemBlock,data));
+    mem_block *old_block = (mem_block *)((char *)ptr - offset_of_member(mem_block,data));
     size_t old_size = old_block->size;
-    MemBlock *block = ArenaAlloc(arena, sizeof(MemBlock) + size);
+    mem_block *block = arena_alloc(ar, sizeof(mem_block) + size);
     block->size = size;
     memmove(block->data, old_block->data, old_size);
     return block->data;
 }
 
 void
-ArenaNoop(void *arena_ptr, void *ptr)
+arena_noop(void *ar_ptr, void *ptr)
 {
 }
 

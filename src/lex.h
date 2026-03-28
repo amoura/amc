@@ -2,7 +2,7 @@
 #define LEX_H
 
 //gen:enum
-typedef enum TokenType {
+typedef enum token_type {
     TOK_NONE,
 
     TOK_OPEN_PAR,
@@ -20,37 +20,37 @@ typedef enum TokenType {
 
     TOK_EOF,
     TOK_ERR,
-} TokenType;
+} token_type;
 
 typedef struct {
-    TokenType type;
+    token_type type;
     u64 pos;
     union {
         char *str_val;
         int int_val;
     };
-} Token;
+} token;
 
 typedef struct {
     u32 line;
     u32 col;
-} TextPos;
+} text_pos;
 
 typedef struct {
     char *text;
     char *source;
     u64 len;
     u64 pos;
-    StrStore *st;
-} Lexer;
+    str_store *st;
+} lexer;
 
-Lexer
-MakeLexer(char *text, char *source, u64 len, StrStore *st);
+lexer
+make_lexer(char *text, char *source, u64 len, str_store *st);
 
-Token
-NextToken(Lexer *lex);
+token
+next_token(lexer *lex);
 
-TextPos
-GetTextPos(Lexer *lex);
+text_pos
+get_text_pos(lexer *lex);
 
 #endif // LEX_H

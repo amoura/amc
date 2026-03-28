@@ -17,43 +17,43 @@
 typedef struct {
     char	*contents;
     size_t	len;
-} Buffer;
+} buffer;
 
-Buffer
-ReadWholeFile(const char* filename, Arena *arena);
+buffer
+read_whole_file(const char* filename, arena *ar);
 
-Thread	MakeThread(
-            ThreadWorker	*thread_worker,
-            void		    *thread_data
+thread	make_thread(
+            thread_worker	*thr_worker,
+            void		    *thr_data
         );
-void	CloseThread(Thread		thread);
-void	WaitForThread(Thread	thread);
-Mutex	MakeMutex(void);
-void	DestroyMutex(Mutex		*mutex);
-void	LockMutex(Mutex			*mutex);
-void	UnlockMutex(Mutex		*mutex);
+void	close_thread(thread		thr);
+void	wait_for_thread(thread	thr);
+mutex	make_mutex(void);
+void	destroy_mutex(mutex		*mut);
+void	lock_mutex(mutex			*mut);
+void	unlock_mutex(mutex		*mut);
 
-struct SimpleThreadPool;
-typedef struct SimpleThreadPool SimpleThreadPool;
+struct simple_thread_pool;
+typedef struct simple_thread_pool simple_thread_pool;
 
 typedef struct {
-    u32	    		thread_index;
-    SimpleThreadPool 	*pool;
-} SimpleThreadData;
+    u32	    		thr_index;
+    simple_thread_pool 	*pool;
+} simple_thread_data;
 
-typedef void SimpleThreadPoolFn(void*, Arena*);
+typedef void simple_thread_pool_fn(void*, arena*);
 
-struct SimpleThreadPool {
-    SimpleThreadPoolFn	*worker_fn;
+struct simple_thread_pool {
+    simple_thread_pool_fn	*worker_fn;
     void		**data;
     u64			num_tasks;
-    Thread		threads[MAX_NUM_THREADS];
-    u64			num_threads;
-    Mutex		mutex;
+    thread		thrs[MAX_NUM_THREADS];
+    u64			num_thrs;
+    mutex		mut;
     u64			next_task_index;
-    SimpleThreadData	tdata[MAX_NUM_THREADS];
-    Arena		*arena;
-    u64			mem_per_thread;
+    simple_thread_data	tdata[MAX_NUM_THREADS];
+    arena		*ar;
+    u64			mem_per_thr;
 };
 
 #endif // AM_OS_H

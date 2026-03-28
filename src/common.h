@@ -66,29 +66,29 @@ typedef double r64;
 ////////////////////////////////////////////////////////////
 // Helpful macros
 
-#define Stringify_(x)		#x
-#define Stringify(x)		Stringify_(x)
-#define Join_(x,y)		x##y
-#define Join(x,y)		Join_(x,y)
+#define stringify_(x)		#x
+#define stringify(x)		stringify_(x)
+#define join_(x,y)		x##y
+#define join(x,y)		join_(x,y)
 
-#define ArrayLen(x)		(sizeof(x)/sizeof(*(x)))
+#define array_len(x)		(sizeof(x)/sizeof(*(x)))
 
-#define IntFromPtr(ptr)		(size_t)((char*)ptr - (char*)0)
-#define PtrFromInt(n)		(void*)((char*)0 + (n))
+#define int_from_ptr(ptr)		(size_t)((char*)ptr - (char*)0)
+#define ptr_from_int(n)		(void*)((char*)0 + (n))
 
-#define Member(T,m)		(((T*)0)->m)
-#define OffsetOfMember(T,m)	IntFromPtr(&Member(T,m))
+#define member(T,m)		(((T*)0)->m)
+#define offset_of_member(T,m)	int_from_ptr(&member(T,m))
 
-#define Min(x,y)		(((x)<(y)) ? (x) : (y))
-#define Max(x,y)		(((x)>(y)) ? (x) : (y))
-#define Clamp(a,x,b)		(((x)<(a)) ? (a) : ((x)>(b)) ? (b) : (x))
+#define minimum(x,y)		(((x)<(y)) ? (x) : (y))
+#define maximum(x,y)		(((x)>(y)) ? (x) : (y))
+#define clamp(a,x,b)		(((x)<(a)) ? (a) : ((x)>(b)) ? (b) : (x))
 
 #define Kb(x)			(1024*(x))
 #define Mb(x)			(1024*1024*(x))
 #define Gb(x)			(1024*1024*1024*(x))
 
 #define for_i(T,i,n)    for(T i=0; i<(n); i++)
-#define for_array(i,arr) for(u64 i=0; i<ArrayLen(arr); i++)
+#define for_array(i,arr) for(u64 i=0; i<array_len(arr); i++)
 
 
 ////////////////////////////////////////////////////////////
@@ -110,32 +110,32 @@ typedef double r64;
 # endif
 #endif
 
-#define AlignUpPow2(x,p)	(((x) + (p) - 1) & ~((p) - 1))
-#define AlignDownPow2(x,p)	((x)&~((p) - 1))
-#define IsAlignedPow2(ptr,p)	((IntFromPtr(ptr) & ((p) - 1)) == 0)
+#define align_up_pow2(x,p)	(((x) + (p) - 1) & ~((p) - 1))
+#define align_down_pow2(x,p)	((x)&~((p) - 1))
+#define is_aligned_pow2(ptr,p)	((int_from_ptr(ptr) & ((p) - 1)) == 0)
 
 
 ///////////////////////////////////////////////////////////
 // Error reporting
 
-#define Error(msg)     do {\
+#define error(msg)     do {\
     fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);\
     fprintf(stderr, msg);\
     exit(1);\
 } while(false)
 
-#define Errorf(fmt,...)     do {\
+#define errorf(fmt,...)     do {\
     fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);\
     fprintf(stderr, fmt, __VA_ARGS__);\
     exit(1);\
 } while(false)
 
-#define ErrorIf(cond,msg)  if (cond) {\
-    Error(msg);\
+#define error_if(cond,msg)  if (cond) {\
+    error(msg);\
 }
 
-#define ErrorfIf(cond,fmt,...) if (cond) {\
-    Errorf(fmt, __VA_ARGS__);\
+#define errorf_if(cond,fmt,...) if (cond) {\
+    errorf(fmt, __VA_ARGS__);\
 }
 
 #endif // AM_COMMON_H

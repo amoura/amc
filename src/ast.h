@@ -2,79 +2,77 @@
 #define AST_H
 
 //gen:enum
-typedef enum AstType {
+typedef enum ast_type {
     AST_NONE,
     AST_PROGRAM,
     AST_FUNCTION,
     AST_STMT,
     AST_EXPR,
     AST_ERR,
-} AstType;
+} ast_type;
 
 //gen:enum
-typedef enum ExprType {
+typedef enum expr_type {
     EXPR_NONE,
     EXPR_CONST,
-} ExprType;
+} expr_type;
 
 //gen:enum
-typedef enum StmtType {
+typedef enum stmt_type {
     STMT_NONE,
     STMT_RETURN,
-} StmtType;
+} stmt_type;
 
 //gen:enum
-typedef enum AstErrorType {
+typedef enum ast_error_type {
     AST_ERR_NONE,
     AST_ERR_EXP_TOKEN,
     AST_ERR_EXP_AST,
-} AstErrorType;
+} ast_error_type;
 
-
-struct Ast;
-typedef struct Ast Ast;
+typedef struct ast ast;
 
 typedef struct {
-    Ast *fn;
-} AstProgram;
+    ast *fn;
+} ast_program;
 
 typedef struct {
     char *name;
-    Ast *body;
-} AstFunction;
+    ast *body;
+} ast_function;
 
 typedef struct {
-    ExprType type;
+    expr_type type;
     int value;
-} AstExpr;
+} ast_expr;
 
 typedef struct {
-    Ast *expr;
-} StmtReturn;
+    ast *expr;
+} stmt_return;
 
 typedef struct {
-    StmtType type;
-    StmtReturn ret;
-} AstStmt;
+    stmt_type type;
+    stmt_return ret;
+} ast_stmt;
 
-typedef struct AstError {
-    struct Ast *next;
-    AstErrorType type;
+typedef struct ast_error {
+    struct ast *next;
+    ast_error_type type;
     union {
-        TokenType exp_token_type;
-        AstType exp_ast_type;
+        token_type exp_token_type;
+        ast_type exp_ast_type;
     };
-    TokenType found_tok_type;
-} AstError;
+    token_type found_tok_type;
+} ast_error;
 
-struct Ast {
-    AstType type;
+struct ast {
+    ast_type type;
     union {
-        AstProgram progr;
-        AstFunction fn;
-        AstExpr expr;
-        AstStmt stmt;
-        AstError err;
+        ast_program progr;
+        ast_function fn;
+        ast_expr expr;
+        ast_stmt stmt;
+        ast_error err;
     };
 };
 

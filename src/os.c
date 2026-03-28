@@ -15,13 +15,13 @@
 ////////////////////////////////////////////////////////////
 // File I/O
 
-Buffer
-ReadWholeFile(const char* filename, Arena *arena)
+buffer
+read_whole_file(const char* filename, arena *ar)
 {
     FILE* fp = NULL;
     long bufsize = 0;
     char* source = NULL;
-    Buffer buffer = {0};
+    buffer buf = {0};
 
     fp = fopen(filename, "rb");
     assert(fp);
@@ -42,12 +42,12 @@ ReadWholeFile(const char* filename, Arena *arena)
         assert(false);
     }
 
-    source = ArenaAllocTypeN(arena, char, bufsize + 1);
-    u64 mark = ArenaPos(arena);
+    source = arena_alloc_type_n(ar, char, bufsize + 1);
+    u64 mark = arena_pos(ar);
     size_t len = fread(source, sizeof(char), bufsize, fp);
     if (ferror(fp) != 0) {
         fputs("Error reading file", stderr);
-        ArenaPopToPos(arena, mark);
+        arena_pop_to_pos(ar, mark);
         fclose(fp);
 	assert(false);
     } else {
@@ -57,51 +57,51 @@ ReadWholeFile(const char* filename, Arena *arena)
     // Close the file
     fclose(fp);
 
-    buffer.len = len;
-    buffer.contents = source;
-    return buffer;
+    buf.len = len;
+    buf.contents = source;
+    return buf;
 }
 
 
 ////////////////////////////////////////////////////////////
-// Multi-threading
+// Multi-thring
 
-SimpleThreadPool
-CreateSimpleThreadPool(SimpleThreadPoolFn	*worker_fn,
+simple_thread_pool
+create_simple_thread_pool(simple_thread_pool_fn	*worker_fn,
 		       void	    		**data,
 		       u64	    		num_tasks,
-		       u64	    		num_threads,
-		       u64			mem_per_thread,
-		       Arena			*arena)
+		       u64	    		num_thrs,
+		       u64			mem_per_thr,
+		       arena			*ar)
 {
-    SimpleThreadPool pool = {0};
-    assert(num_threads <= ArrayLen(pool.threads));
+    simple_thread_pool pool = {0};
+    assert(num_thrs <= array_len(pool.thrs));
     
     pool.worker_fn = worker_fn;
     pool.data = data;
     pool.num_tasks = num_tasks;
-    pool.num_threads = num_threads;
+    pool.num_thrs = num_thrs;
     pool.next_task_index = 0;
-    pool.mutex = MakeMutex();
-    pool.arena = arena;
-    pool.mem_per_thread = mem_per_thread;
+    pool.mut = make_mutex();
+    pool.ar = ar;
+    pool.mem_per_thr = mem_per_thr;
     
     return pool;
 }
 
 void
-DestroySimpleThreadPool(SimpleThreadPool	*pool)
+destroy_simple_thread_pool(simple_thread_pool	*pool)
 {
-    for (u64 i=0; i<pool->num_threads; i++) {
-        CloseThread(pool->threads[i]);
+    for (u64 i=0; i<pool->num_thrs; i++) {
+        close_thread(pool->thrs[i]);
     }
-    DestroyMutex(&pool->mutex);
+    destroy_mutex(&pool->mut);
 }
 
 void *
-SimpleThreadPoolGetNextTask(SimpleThreadPool	*pool)
+simple_thread_pool_get_next_task(simple_thread_pool	*pool)
 {
-    LockMutex(&pool->mutex);
+    lock_mutex(&pool->mut);
     assert(pool->next_task_index < pool->num_tasks + 1);
     void *task_data = NULL;
     if (pool->next_task_index < pool->num_tasks) {
@@ -110,27 +110,27 @@ SimpleThreadPoolGetNextTask(SimpleThreadPool	*pool)
     } else {
 	assert(pool->next_task_index == pool->num_tasks);
     }
-    UnlockMutex(&pool->mutex);
+    unlock_mutex(&pool->mut);
 
     return task_data;
 }
 
 THREAD_WORKER_RETURN_TYPE
-SimpleThreadPoolProcess(void *data)
+simple_thread_pool_process(void *data)
 {
-    SimpleThreadData 	*tdata = (SimpleThreadData *) data;
-    SimpleThreadPool 	*pool  = tdata->pool;
+    simple_thread_data 	*tdata = (simple_thread_data *) data;
+    simple_thread_pool 	*pool  = tdata->pool;
 
-    LockMutex(&pool->mutex);
-    Arena 		arena  = MakeSubArena(pool->arena,
-					      pool->mem_per_thread);
-    UnlockMutex(&pool->mutex);
+    lock_mutex(&pool->mut);
+    arena 		ar  = make_sub_arena(pool->ar,
+					      pool->mem_per_thr);
+    unlock_mutex(&pool->mut);
     
     while (true) {
-	void *task_data = SimpleThreadPoolGetNextTask(pool);
+	void *task_data = simple_thread_pool_get_next_task(pool);
 	if (task_data) {
-	    ArenaReset(&arena);
-	    tdata->pool->worker_fn(task_data, &arena);
+	    arena_reset(&ar);
+	    tdata->pool->worker_fn(task_data, &ar);
 	} else {
 	    break;
 	}
@@ -139,46 +139,46 @@ SimpleThreadPoolProcess(void *data)
 }
 
 void
-StartSimpleThreadPool(SimpleThreadPool	*pool)
+start_simple_thread_pool(simple_thread_pool	*pool)
 {
-    for (u64 i=0; i<pool->num_threads; i++) {
-	pool->tdata[i].thread_index = i;
+    for (u64 i=0; i<pool->num_thrs; i++) {
+	pool->tdata[i].thr_index = i;
 	pool->tdata[i].pool = pool;
-	pool->threads[i] = MakeThread(SimpleThreadPoolProcess,
+	pool->thrs[i] = make_thread(simple_thread_pool_process,
 					pool->tdata + i);
     }
 
-    for (u64 i=0; i<pool->num_threads; i++) {
-	WaitForThread(pool->threads[i]);
+    for (u64 i=0; i<pool->num_thrs; i++) {
+	wait_for_thread(pool->thrs[i]);
     }
 }
 
 void
-DoThreadedTasks(SimpleThreadPoolFn	*worker_fn,    
+do_threaded_tasks(simple_thread_pool_fn	*worker_fn,    
 		void	    		**data,	       
 		u64	    		num_tasks,     
-		u64	    		num_threads,   
-		u64			mem_per_thread,
-		Arena			*arena)
+		u64	    		num_thrs,   
+		u64			mem_per_thr,
+		arena			*ar)
 {
     assert(worker_fn);
     
     u64 mark = 0;
-    if (arena) {
-	mark = ArenaPos(arena);	
+    if (ar) {
+	mark = arena_pos(ar);	
     }
     
-    SimpleThreadPool pool = CreateSimpleThreadPool(worker_fn,
+    simple_thread_pool pool = create_simple_thread_pool(worker_fn,
 						   data,
 						   num_tasks,
-						   num_threads,
-						   mem_per_thread,
-						   arena);
-    StartSimpleThreadPool(&pool);
-    DestroySimpleThreadPool(&pool);
+						   num_thrs,
+						   mem_per_thr,
+						   ar);
+    start_simple_thread_pool(&pool);
+    destroy_simple_thread_pool(&pool);
 
-    if (arena) {
-	ArenaPopToPos(arena, mark);	
+    if (ar) {
+	arena_pop_to_pos(ar, mark);	
     }
 }
 
@@ -197,29 +197,29 @@ int f(int n) {
     return n * n; 
 }
 
-// Structure to pass multiple arguments to each thread function
+// Structure to pass multiple arguments to each thr function
 typedef struct {
     int start_index;
     int end_index;
     const int *input_array;
     int *output_array;
-} ThreadData;
+} thread_data;
 
-// The thread function that processes a sub-range
+// The thr function that processes a sub-range
 THREAD_WORKER_RETURN_TYPE
 process_range(void *arg) {
-    ThreadData* data = (ThreadData *) arg;
+    thread_data* data = (thread_data *) arg;
     for (int i = data->start_index; i < data->end_index; ++i) {
         data->output_array[i] = f(data->input_array[i]);
     }
     return 0;
 }
 
-void test_threads(void) {
+void test_thrs(void) {
     int 	input_array[ARRAY_SIZE];
     int 	output_array[ARRAY_SIZE];
-    Thread 	threads[NUM_THREADS];
-    ThreadData 	thread_data[NUM_THREADS];
+    thread 	thrs[NUM_THREADS];
+    thread_data 	thr_data[NUM_THREADS];
 
     // Initialize the input array with some values
     for (int i = 0; i < ARRAY_SIZE; ++i) {
@@ -227,26 +227,26 @@ void test_threads(void) {
     }
     int chunk_size = ARRAY_SIZE / NUM_THREADS;
 
-    // Create threads and assign sub-ranges
+    // Create thrs and assign sub-ranges
     for (int i = 0; i < NUM_THREADS; ++i) {
-        thread_data[i].start_index = i * chunk_size;
-        // Ensure the last thread handles any remaining elements
+        thr_data[i].start_index = i * chunk_size;
+        // Ensure the last thr handles any remaining elements
         if (i == NUM_THREADS - 1) {
-            thread_data[i].end_index = ARRAY_SIZE;
+            thr_data[i].end_index = ARRAY_SIZE;
         } else {
-            thread_data[i].end_index = (i + 1) * chunk_size;
+            thr_data[i].end_index = (i + 1) * chunk_size;
         }
-        thread_data[i].input_array = input_array;
-        thread_data[i].output_array = output_array;
+        thr_data[i].input_array = input_array;
+        thr_data[i].output_array = output_array;
 
-        // Create the thread, passing a pointer to its data
-        threads[i] = MakeThread(process_range,
-				  (void*)&thread_data[i]);
+        // Create the thr, passing a pointer to its data
+        thrs[i] = make_thread(process_range,
+				  (void*)&thr_data[i]);
     }
 
-    // Wait for all threads to finish
+    // Wait for all thrs to finish
     for (int i = 0; i < NUM_THREADS; ++i) {
-        WaitForThread(threads[i]);
+        wait_for_thread(thrs[i]);
     }
 
     for (int i = 0; i < ARRAY_SIZE; ++i) {
@@ -258,14 +258,14 @@ void test_threads(void) {
 typedef struct {
     int	input;
     int	*output;
-} PData;
+} p_data;
 
 void
-square_fn(void *data, Arena *arena)
+square_fn(void *data, arena *ar)
 {
-    PData *pdata = (PData *) data;
-    u64 mark = ArenaPos(arena);
-    int *ints = ArenaAllocTypeN(arena, int, 5);
+    p_data *pdata = (p_data *) data;
+    u64 mark = arena_pos(ar);
+    int *ints = arena_alloc_type_n(ar, int, 5);
     for (int i=0; i<5; i++) {
 	ints[i] = pdata->input;
     }
@@ -274,17 +274,17 @@ square_fn(void *data, Arena *arena)
 	result += ints[i];
     }
     *pdata->output = result;
-    ArenaPopToPos(arena, mark);
+    arena_pop_to_pos(ar, mark);
 }
 
-void test_simple_thread_pool(void) {
+void test_simple_thr_pool(void) {
     int 	input_array[ARRAY_SIZE];
     int 	output_array[ARRAY_SIZE];
-    Thread 	threads[NUM_THREADS];
-    PData 	data[ARRAY_SIZE];
+    thread 	thrs[NUM_THREADS];
+    p_data 	data[ARRAY_SIZE];
     void	*data_ptrs[ARRAY_SIZE];
 
-    Arena arena = MakeArena(Mb(5));
+    arena ar = make_arena(Mb(5));
 
     // Initialize the input array with some values
     for (int i = 0; i < ARRAY_SIZE; ++i) {
@@ -294,12 +294,12 @@ void test_simple_thread_pool(void) {
 	data_ptrs[i] = data + i;
     }
 
-    DoThreadedTasks(square_fn, 
+    do_threaded_tasks(square_fn, 
 		    data_ptrs, 
 		    ARRAY_SIZE,
 		    4,	      
 		    Mb(1),     
-		    &arena);
+		    &ar);
     
     for (int i = 0; i < ARRAY_SIZE; ++i) {
 	assert(output_array[i] == 5*i);

@@ -1,13 +1,13 @@
 #include "ast.h.gen"
 
 bool
-AstIsErr(Ast *ast)
+ast_is_err(ast *a)
 {
-    return ast->type == AST_ERR;
+    return a->type == AST_ERR;
 }
 
 const char *
-AstTypeToMsg(AstType type)
+ast_type_to_msg(ast_type type)
 {
     switch (type) {
         case AST_PROGRAM:
@@ -29,84 +29,84 @@ AstTypeToMsg(AstType type)
 ////////////////////////////////////////////////
 // Constructors
 
-Ast *
-NewAstProgram(Arena *arena, Ast *fn)
+ast *
+new_ast_program(arena *ar, ast *fn)
 {
-    assert(arena);
+    assert(ar);
     assert(fn);
     assert(fn->type == AST_FUNCTION);
-    Ast *ast = ArenaAllocType(arena, Ast);
-    ast->type = AST_PROGRAM;
-    ast->progr.fn = fn;
-    return ast;
+    ast *a = arena_alloc_type(ar, ast);
+    a->type = AST_PROGRAM;
+    a->progr.fn = fn;
+    return a;
 }
 
-Ast *
-NewAstFunction(Arena *arena, char *name, Ast *body)
+ast *
+new_ast_function(arena *ar, char *name, ast *body)
 {
-    assert(arena);
+    assert(ar);
     assert(name);
     assert(body);
-    Ast *ast = ArenaAllocType(arena, Ast);
-    ast->type = AST_FUNCTION;
-    ast->fn.name = name;
-    ast->fn.body = body;
-    return ast;
+    ast *a = arena_alloc_type(ar, ast);
+    a->type = AST_FUNCTION;
+    a->fn.name = name;
+    a->fn.body = body;
+    return a;
 }
 
-Ast *
-NewAstErrorExpToken(
-        Arena *arena,
-        TokenType exp_tok_type, 
-        TokenType found_tok_type
+ast *
+new_ast_error_exp_token(
+        arena *ar,
+        token_type exp_tok_type, 
+        token_type found_tok_type
 ) {
-    assert(arena);
-    Ast *ast = ArenaAllocType(arena, Ast);
-ast->type = AST_ERR;
-    ast->err.type = AST_ERR_EXP_TOKEN;
-    ast->err.next = NULL;
-    ast->err.exp_token_type = exp_tok_type;
-    ast->err.found_tok_type = found_tok_type;
-    return ast;
+    assert(ar);
+    ast *a = arena_alloc_type(ar, ast);
+a->type = AST_ERR;
+    a->err.type = AST_ERR_EXP_TOKEN;
+    a->err.next = NULL;
+    a->err.exp_token_type = exp_tok_type;
+    a->err.found_tok_type = found_tok_type;
+    return a;
 }
 
-Ast *
-NewAstErrorExpAst(
-        Arena *arena,
-        Ast *next,
-        AstType exp_ast_type
+ast *
+new_ast_error_exp_ast(
+        arena *ar,
+        ast *next,
+        ast_type exp_ast_type
 ) {
-    assert(arena);
-    Ast *ast = ArenaAllocType(arena, Ast);
-    ast->type = AST_ERR;
-    ast->err.next = next;
-    ast->err.type = AST_ERR_EXP_AST;
-    ast->err.exp_ast_type = exp_ast_type;
-    return ast;
+    assert(ar);
+    ast *a = arena_alloc_type(ar, ast);
+    a->type = AST_ERR;
+    a->err.next = next;
+    a->err.type = AST_ERR_EXP_AST;
+    a->err.exp_ast_type = exp_ast_type;
+    return a;
 }
 
-Ast *
-NewStmtReturn(Arena *arena, Ast *expr)
+ast *
+new_stmt_return(arena *ar, ast *expr)
 {
-    assert(arena);
+    assert(ar);
     assert(expr);
     assert(expr->type == AST_EXPR);
-    Ast *ast = ArenaAllocType(arena, Ast);
-    ast->type = AST_STMT;
-    ast->stmt.type = STMT_RETURN;
-    ast->stmt.ret.expr = expr;
-    return ast;
+    ast *a = arena_alloc_type(ar, ast);
+    a->type = AST_STMT;
+    a->stmt.type = STMT_RETURN;
+    a->stmt.ret.expr = expr;
+    return a;
 }
 
-Ast *
-NewExprConstant(Arena *arena, int value)
+ast *
+new_expr_constant(arena *ar, int value)
 {
-    assert(arena);
-    Ast *ast = ArenaAllocType(arena, Ast);
-    ast->type = AST_EXPR;
-    ast->expr.type = EXPR_CONST;
-    ast->expr.value = value;
-    return ast;
+    assert(ar);
+    ast *a = arena_alloc_type(ar, ast);
+    a->type = AST_EXPR;
+    a->expr.type = EXPR_CONST;
+    a->expr.value = value;
+    return a;
 }
 
 
@@ -114,7 +114,7 @@ NewExprConstant(Arena *arena, int value)
 // Pretty-printing
 
 void
-PrintIndent(FILE *stream, int indent)
+print_indent(FILE *stream, int indent)
 {
     for_i(int,i,indent) {
         fprintf(stream, " ");
@@ -122,34 +122,34 @@ PrintIndent(FILE *stream, int indent)
 }
 
 void
-PrintAst(FILE *stream, Ast *ast, int indent)
+print_ast(FILE *stream, ast *a, int indent)
 {
     assert(stream);
-    assert(ast);
+    assert(a);
 
-    PrintIndent(stream, indent);
-    switch (ast->type) {
+    print_indent(stream, indent);
+    switch (a->type) {
         case AST_PROGRAM:
             fprintf(stream, "Program:\n");
-            PrintAst(stream, ast->progr.fn, indent+4);
+            print_ast(stream, a->progr.fn, indent+4);
             break;
 
         case AST_FUNCTION:
             fprintf(stream, "Function:\n");
-            PrintIndent(stream, indent+4);
-            fprintf(stream, "name: %s\n", ast->fn.name);
-            PrintAst(stream, ast->fn.body, indent+4);
+            print_indent(stream, indent+4);
+            fprintf(stream, "name: %s\n", a->fn.name);
+            print_ast(stream, a->fn.body, indent+4);
             break;
 
         case AST_STMT:
-            fprintf(stream, "Statement (%s):\n", StmtTypeToStr(ast->stmt.type));
-            PrintAst(stream, ast->stmt.ret.expr, indent+4);
+            fprintf(stream, "Statement (%s):\n", stmt_type_to_str(a->stmt.type));
+            print_ast(stream, a->stmt.ret.expr, indent+4);
             break;
 
         case AST_EXPR:
-            fprintf(stream, "Expr (%s):\n", ExprTypeToStr(ast->expr.type));
-            PrintIndent(stream, indent+4);
-            fprintf(stream, "value: %d\n", ast->expr.value);
+            fprintf(stream, "Expr (%s):\n", expr_type_to_str(a->expr.type));
+            print_indent(stream, indent+4);
+            fprintf(stream, "value: %d\n", a->expr.value);
             break;
 
         default:
@@ -166,14 +166,14 @@ PrintAst(FILE *stream, Ast *ast, int indent)
 void
 test_ast_1(void)
 {
-    Arena arena = MakeArena(Mb(1));
-    Ast *int_const = NewExprConstant(&arena, 102);
+    arena ar = make_arena(Mb(1));
+    ast *int_const = new_expr_constant(&ar, 102);
     assert(int_const);
-    Ast *ret = NewStmtReturn(&arena, int_const);
+    ast *ret = new_stmt_return(&ar, int_const);
     assert(ret);
-    Ast *fn = NewAstFunction(&arena, "main", ret);
+    ast *fn = new_ast_function(&ar, "main", ret);
     assert(fn);
-    Ast *progr = NewAstProgram(&arena, fn);
+    ast *progr = new_ast_program(&ar, fn);
     assert(progr);
 
     assert(int_const->type == AST_EXPR);
@@ -186,8 +186,8 @@ test_ast_1(void)
     assert(ret->stmt.type == STMT_RETURN);
     assert(ret->stmt.ret.expr == int_const);
     
-    //PrintAst(stdout, progr, 0);
-    FreeArena(&arena);
+    //print_ast(stdout, progr, 0);
+    free_arena(&ar);
 }
 
 #endif

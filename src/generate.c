@@ -9,7 +9,7 @@
 #include "os.c"
 
 char *
-SkipWhitespace(char *str)
+skip_whitespace(char *str)
 {
     while (*str!=0 && isspace(*str)) {
         str++;
@@ -18,7 +18,7 @@ SkipWhitespace(char *str)
 }
 
 char *
-Expect(char *str, const char *expected)
+expect(char *str, const char *expected)
 {
     size_t len = strlen(expected);
     if (strncmp(str,expected,len) != 0) {
@@ -29,12 +29,12 @@ Expect(char *str, const char *expected)
 
 int main(int num_args, char **args)
 {
-    Arena arena = MakeArena(Mb(8));
+    arena ar = make_arena(Mb(8));
 
     for (int file_index=1; file_index<num_args; file_index++) {
         char *in_file_name = args[file_index];
         size_t in_file_name_size = strlen(in_file_name);
-        char *out_file_name = ArenaAllocTypeN(&arena, char, in_file_name_size+5);
+        char *out_file_name = arena_alloc_type_n(&ar, char, in_file_name_size+5);
         memcpy(out_file_name, in_file_name, in_file_name_size);
         memcpy(out_file_name+in_file_name_size, ".gen", 4);
         assert(strlen(out_file_name) == in_file_name_size + 4);
@@ -42,67 +42,67 @@ int main(int num_args, char **args)
         assert(strcmp(out_file_name+in_file_name_size, ".gen") == 0);
         FILE *out = fopen(out_file_name, "w");
 
-        Buffer buffer = ReadWholeFile(in_file_name, &arena);
-        char *text = buffer.contents;
+        buffer buf = read_whole_file(in_file_name, &ar);
+        char *text = buf.contents;
         for (char *ptr=strstr(text, "\n//gen:enum");
              ptr;
              ptr=strstr(ptr, "\n//gen:enum")) 
         {
             ptr++;
             ptr = strchr(ptr, '\n');
-            ptr = SkipWhitespace(ptr);
-            ptr = Expect(ptr, "typedef enum ");
-            ErrorIf(ptr == NULL, "expected enum");
+            ptr = skip_whitespace(ptr);
+            ptr = expect(ptr, "typedef enum ");
+            error_if(ptr == NULL, "expected enum");
             
-            ptr = SkipWhitespace(ptr);
+            ptr = skip_whitespace(ptr);
             char *ptr0 = ptr;
-            while (*ptr && isalpha(*ptr)) {
+            while (*ptr && (isalpha(*ptr) || *ptr=='_')) {
                 ptr++;
             }
-            ErrorIf(ptr == ptr0, "expected identifier");
-            char *enum_name = ArenaAllocTypeN(&arena, char, ptr-ptr0+1);
+            error_if(ptr == ptr0, "expected identifier");
+            char *enum_name = arena_alloc_type_n(&ar, char, ptr-ptr0+1);
             memcpy(enum_name, ptr0, ptr-ptr0);
             assert(strlen(enum_name) == ptr-ptr0);
             printf("%s: found enum %s\n", in_file_name, enum_name);
             
-            char *fn_name = ArenaAllocTypeN(&arena, char, ptr-ptr0+6);
+            char *fn_name = arena_alloc_type_n(&ar, char, ptr-ptr0+8);
             memcpy(fn_name, enum_name, ptr-ptr0);
-            memcpy(fn_name+(ptr-ptr0), "ToStr", 5);
-            assert(strlen(fn_name) == strlen(enum_name) + 5);
+            memcpy(fn_name+(ptr-ptr0), "_to_str", 7);
+            assert(strlen(fn_name) == strlen(enum_name) + 7);
 
             fprintf(out, "const char *\n");
             fprintf(out, "%s(%s x)\n", fn_name, enum_name);
             fprintf(out, "{\n");
             fprintf(out, "    switch (x) {\n");
 
-            ptr = SkipWhitespace(ptr);
-            ptr = Expect(ptr, "{");
-            ErrorIf(ptr==NULL, "expected '{'");
+            ptr = skip_whitespace(ptr);
+            ptr = expect(ptr, "{");
+            error_if(ptr==NULL, "expected '{'");
 
-            for (ptr = SkipWhitespace(ptr);
+            for (ptr = skip_whitespace(ptr);
                  ptr && *ptr && (isalpha(*ptr) || *ptr=='_');
-                 ptr = SkipWhitespace(ptr))
+                 ptr = skip_whitespace(ptr))
             {
                 ptr0 = ptr;
-                while (*ptr && (isalpha(*ptr) || *ptr=='_')) {
+                while (*ptr && (isalnum(*ptr) || *ptr=='_')) {
                     ptr++;
                 }
-                ErrorIf(ptr == ptr0, "expected identifier");
-                char *enum_item = ArenaAllocTypeN(&arena, char, ptr-ptr0+1);
+                error_if(ptr == ptr0, "expected identifier");
+                char *enum_item = arena_alloc_type_n(&ar, char, ptr-ptr0+1);
                 memcpy(enum_item, ptr0, ptr-ptr0);
                 assert(strlen(enum_item) == ptr-ptr0);
                 fprintf(out, "    case %s:\n", enum_item);
                 fprintf(out, "        return \"%s\";\n", enum_item);
-                ptr = Expect(ptr, ",");
-                ErrorIf(ptr==NULL, "expected a comma");
+                ptr = expect(ptr, ",");
+                error_if(ptr==NULL, "expected a comma");
             }
-            ptr = Expect(ptr, "}");
-            ErrorIf(ptr==NULL, "expected '}'");
-            ptr = SkipWhitespace(ptr);
-            ptr = Expect(ptr, enum_name);
-            ErrorIf(ptr==NULL, "expected enum name");
-            ptr = SkipWhitespace(ptr);
-            ptr = Expect(ptr, ";");
+            ptr = expect(ptr, "}");
+            error_if(ptr==NULL, "expected '}'");
+            ptr = skip_whitespace(ptr);
+            ptr = expect(ptr, enum_name);
+            error_if(ptr==NULL, "expected enum name");
+            ptr = skip_whitespace(ptr);
+            ptr = expect(ptr, ";");
 
             fprintf(out, "    default:\n");
             fprintf(out, "        assert(false);\n");

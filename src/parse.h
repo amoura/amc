@@ -2,14 +2,14 @@
 #define PARSE_H
 
 typedef struct {
-    Lexer lexer;
-    Arena *arena;
-} Parser;
+    lexer lex;
+    arena *ar;
+} parser;
 
-Ast * ParseProgram(Parser *p);
-Ast * ParseFunction(Parser *p);
-Ast * ParseExpr(Parser *p);
-Ast * ParseStatement(Parser *p);
+ast * parse_program(parser *p);
+ast * parse_function(parser *p);
+ast * parse_expr(parser *p);
+ast * parse_statement(parser *p);
 
 
 #endif // PARSE_H

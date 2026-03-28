@@ -4,9 +4,9 @@
 #include "common.h"
 #include <windows.h>
 
-typedef HANDLE Thread;
-typedef HANDLE Mutex;
+typedef HANDLE thread;
+typedef HANDLE mutex;
 typedef DWORD THREAD_WORKER_RETURN_TYPE;
-typedef THREAD_WORKER_RETURN_TYPE ThreadWorker(void *);
+typedef THREAD_WORKER_RETURN_TYPE thread_worker(void *);
 
 #endif // AM_OS_WINDOWS_H

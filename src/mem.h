@@ -25,6 +25,28 @@ void 	FreeArena(Arena 	*arena);
 #define ArenaAllocTypeN(a,T,n)		(T*) ArenaAlloc(a, sizeof(T)*(n))
 
 
+//////////////////////////////////////////////////////////
+// For use wuth am_stb_ds
+
+typedef struct {
+    size_t size;
+    u8 data[0];
+} MemBlock;
+
+void *
+ArenaRealloc(void *arena_ptr, void *ptr, size_t size);
+
+void
+ArenaNoop(void *arena_ptr, void *ptr);
+
+// If including am_stb_arr, add this before including it
+// to make it work with arenas:
+//
+//   #define STB_DS_IMPLEMENTATION
+//   #define STBDS_REALLOC   ArenaRealloc
+//   #define STBDS_FREE      ArenaNoop
+
+#if 0
 ///////////////////////////////////////////////////////////
 // Dynamic array macros
 
@@ -45,19 +67,6 @@ void 	FreeArena(Arena 	*arena);
     }\
     (arr).v[(arr).len++] = elt;\
 } while (false)
-
-#if 0
-#define ArrPush(arena,arr,elt) do {\
-    assert(Join(arr,_len) <= Join(arr,_cap));\
-   if (Join(arr,_cap) == Join(arr,_len)) {\
-       Join(arr,_cap) = 1 + Join(arr,_cap)*2;\
-       void *ptr = ArenaAlloc(arena, Join(arr,_cap) * sizeof(*arr));\
-       memmove(ptr, arr, Join(arr,_len)*sizeof(*arr));\
-       arr = ptr;\
-   }\
-    arr[Join(arr,_len)] = elt;\
-    Join(arr,_len)++;\
-} while(false)
 #endif
 
 #endif // AM_MEM_H

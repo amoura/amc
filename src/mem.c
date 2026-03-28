@@ -88,3 +88,30 @@ FreeArena(Arena	*arena)
     *arena = (Arena) {0};
 }
 
+
+///////////////////////////////////////////////
+// For integration with am_stb_ds.h
+
+void *
+ArenaRealloc(void *arena_ptr, void *ptr, size_t size)
+{
+    Arena *arena = (Arena *) arena_ptr;
+    if (ptr == NULL) {
+        MemBlock *block = ArenaAlloc(arena, sizeof(MemBlock) + size);
+        block->size = size;
+        return block->data;
+    }
+    MemBlock *old_block = (MemBlock *)(ptr - OffsetOfMember(MemBlock,data));
+    size_t old_size = old_block->size;
+    MemBlock *block = ArenaAlloc(arena, sizeof(MemBlock) + size);
+    block->size = size;
+    memmove(block->data, old_block->data, old_size);
+    return block->data;
+}
+
+void
+ArenaNoop(void *arena_ptr, void *ptr)
+{
+}
+
+

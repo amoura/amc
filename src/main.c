@@ -1,3 +1,6 @@
+#define STB_DS_IMPLEMENTATION
+#include "stb_ds.h"
+
 #include "common.h"
 #include "mem.h"
 #include "str.h"

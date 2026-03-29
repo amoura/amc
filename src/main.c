@@ -32,6 +32,7 @@ main(void)
     test_parser_1_basic();
     test_parser_1_valid();
     test_parser_1_invalid();
+    test_asm_tree();
 
     return 0;
 }

@@ -56,6 +56,8 @@ asm_node *
 new_asm_program_node(arena *ar, asm_program p)
 {
     asm_node *node = arena_alloc_type(ar, asm_node);
+    node->type = ASM_NODE_PROGRAM;
+    node->progr = p;
     return node;
 }
 
@@ -70,8 +72,8 @@ push_instrs_from_expr_ast(arena *ar, asm_instr *instr_arr, ast *expr)
     switch (expr->expr.type) {
         case EXPR_CONST: {
             asm_instr instr = make_asm_mov_instr(
-                make_reg_operand(),
-                make_imm_operand(expr->expr.value)
+                make_imm_operand(expr->expr.value),
+                make_reg_operand()
             );
             arrpush(ar, instr_arr, instr);
             break;
@@ -95,7 +97,6 @@ asm_function_from_ast(arena *ar, ast *ast_fn)
     assert(ast_fn->fn.body->stmt.ret.expr);
     assert(ast_fn->fn.body->stmt.ret.expr->type == AST_EXPR);
     assert(ast_fn->fn.body->stmt.ret.expr->expr.type == EXPR_CONST);
-    int value = ast_fn->fn.body->stmt.ret.expr->expr.value;
 
     asm_function fn = make_asm_function(ast_fn->fn.name);
     ast *expr = ast_fn->fn.body->stmt.ret.expr;
@@ -127,4 +128,40 @@ asm_tree_from_ast(arena *ar, ast *a)
 }
 
 
+///////////////////////////////////////////////////////
+// Tests
 
+#ifdef TESTING
+
+void test_asm_tree(void)
+{    
+    char *text =
+        "int main(void)\n"
+        "{\n"
+        "    return 105;\n"
+        "}\n";
+
+    arena ar = make_arena(Mb(8));
+    str_store st = make_str_store(&ar, Mb(2), 10007);
+    parser p = make_parser(text, "test_asm_tree_1", &st, &ar);
+
+    ast *a = parse_program(&p);
+    assert(a);
+    assert(a->type == AST_PROGRAM);
+
+    asm_node *node = asm_tree_from_ast(&ar, a);
+    assert(node);
+    assert(node->type == ASM_NODE_PROGRAM);
+    assert(node->progr.fn.name);
+    assert(node->progr.fn.name == intern_str(&st, "main"));
+    assert(node->progr.fn.instr_arr);
+    assert(arrlen(node->progr.fn.instr_arr) == 2);
+    assert(node->progr.fn.instr_arr[0].type == INSTR_MOV);
+    assert(node->progr.fn.instr_arr[1].type == INSTR_RET);
+    assert(node->progr.fn.instr_arr[0].src.type == OPERAND_IMM);
+    assert(node->progr.fn.instr_arr[0].src.value == 105);
+
+    free_arena(&ar);
+}
+
+#endif

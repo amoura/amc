@@ -9,6 +9,7 @@
 #include "lex.h"
 #include "ast.h"
 #include "parse.h"
+#include "asm-tree.h"
 
 #include "mem.c"
 #define TESTING 1
@@ -16,7 +17,7 @@
 #include "lex.c"
 #include "ast.c"
 #include "parse.c"
-
+#include "asm-tree.c"
 
 int
 main(void)

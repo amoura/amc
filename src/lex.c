@@ -67,6 +67,9 @@ token_eq(token a, token b)
         case TOK_INT_LIT:
             return a.int_val == b.int_val;
             break;
+
+        default:
+            return true;
     }
     return true;
 }
@@ -99,6 +102,8 @@ token_type_to_msg(token_type type)
             return "end of file";
         case TOK_ERR:
             return "error";
+        default:
+            assert(false);
     }
     assert(false);
     return NULL;

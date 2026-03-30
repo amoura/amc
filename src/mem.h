@@ -25,6 +25,13 @@ void 	free_arena(arena 	*ar);
 #define arena_alloc_type_n(a,T,n)		(T*) arena_alloc(a, sizeof(T)*(n))
 
 
+#define def_dyn_arr(T) \
+    typedef struct {\
+        size_t len;\
+        size_t cap;\
+        T *v;\
+    } join(T,_arr)
+
 //////////////////////////////////////////////////////////
 // For use with am_stb_ds
 
@@ -49,13 +56,6 @@ arena_noop(void *ar_ptr, void *ptr);
 #if 0
 ///////////////////////////////////////////////////////////
 // Dynamic array macros
-
-#define def_arr(T) \
-    typedef struct {\
-        size_t len;\
-        size_t cap;\
-        T *v;\
-    } Join(T,Arr)
 
 #define arr_push(arena,arr,elt) do {\
     assert((arr).len <= (arr).cap);\

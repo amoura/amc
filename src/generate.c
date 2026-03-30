@@ -63,7 +63,7 @@ int main(int num_args, char **args)
             char *enum_name = arena_alloc_type_n(&ar, char, ptr-ptr0+1);
             memcpy(enum_name, ptr0, ptr-ptr0);
             assert(strlen(enum_name) == ptr-ptr0);
-            printf("%s: found enum %s\n", in_file_name, enum_name);
+            //printf("%s: found enum %s\n", in_file_name, enum_name);
             
             char *fn_name = arena_alloc_type_n(&ar, char, ptr-ptr0+8);
             memcpy(fn_name, enum_name, ptr-ptr0);

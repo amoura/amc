@@ -4,7 +4,6 @@
 
 #include "common.h"
 #include "mem.h"
-#include "am_stb_ds.h"
 #include "str.h"
 #include "lex.h"
 #include "ast.h"
@@ -12,6 +11,7 @@
 #include "asm-tree.h"
 
 #include "mem.c"
+#include "dynarr.c.gen"
 #define TESTING 1
 #include "str.c"
 #include "lex.c"

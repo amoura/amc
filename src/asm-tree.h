@@ -34,9 +34,10 @@ typedef struct {
     operand dst;
 } asm_instr;
 
+def_dyn_arr(asm_instr);
 typedef struct {
     char *name;
-    asm_instr *instr_arr; 
+    asm_instr_arr instr_arr; 
 } asm_function;
 
 typedef struct {

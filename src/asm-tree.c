@@ -64,8 +64,8 @@ new_asm_program_node(arena *ar, asm_program p)
 //////////////////////////////////////////
 // Generating asm_program from Ast
 
-asm_instr *
-push_instrs_from_expr_ast(arena *ar, asm_instr *instr_arr, ast *expr)
+void
+push_instrs_from_expr_ast(arena *ar, asm_instr_arr *instr_arr, ast *expr)
 {
     assert(expr);
     assert(expr->type == AST_EXPR);
@@ -75,14 +75,13 @@ push_instrs_from_expr_ast(arena *ar, asm_instr *instr_arr, ast *expr)
                 make_imm_operand(expr->expr.value),
                 make_reg_operand()
             );
-            arrpush(ar, instr_arr, instr);
+            asm_instr_arr_push(ar, instr_arr, instr);
             break;
         }
 
         default:
             assert(false);
     }
-    return instr_arr;
 }           
 
 asm_function
@@ -100,12 +99,12 @@ asm_function_from_ast(arena *ar, ast *ast_fn)
 
     asm_function fn = make_asm_function(ast_fn->fn.name);
     ast *expr = ast_fn->fn.body->stmt.ret.expr;
-    fn.instr_arr = push_instrs_from_expr_ast(
+    push_instrs_from_expr_ast(
             ar,
-            fn.instr_arr,
+            &fn.instr_arr,
             expr
     );
-    arrpush(ar, fn.instr_arr, make_asm_ret_instr());
+    asm_instr_arr_push(ar, &fn.instr_arr, make_asm_ret_instr());
     return fn;
 }
 
@@ -154,12 +153,11 @@ void test_asm_tree(void)
     assert(node->type == ASM_NODE_PROGRAM);
     assert(node->progr.fn.name);
     assert(node->progr.fn.name == intern_str(&st, "main"));
-    assert(node->progr.fn.instr_arr);
-    assert(arrlen(node->progr.fn.instr_arr) == 2);
-    assert(node->progr.fn.instr_arr[0].type == INSTR_MOV);
-    assert(node->progr.fn.instr_arr[1].type == INSTR_RET);
-    assert(node->progr.fn.instr_arr[0].src.type == OPERAND_IMM);
-    assert(node->progr.fn.instr_arr[0].src.value == 105);
+    assert(node->progr.fn.instr_arr.len == 2);
+    assert(node->progr.fn.instr_arr.v[0].type == INSTR_MOV);
+    assert(node->progr.fn.instr_arr.v[1].type == INSTR_RET);
+    assert(node->progr.fn.instr_arr.v[0].src.type == OPERAND_IMM);
+    assert(node->progr.fn.instr_arr.v[0].src.value == 105);
 
     free_arena(&ar);
 }

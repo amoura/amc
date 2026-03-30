@@ -12,6 +12,7 @@
 #include "ast.h"
 #include "parse.h"
 #include "asm-tree.h"
+#include "codegen-x64.h"
 
 #include "mem.c"
 #include "dynarr.c.gen"
@@ -21,9 +22,10 @@
 #include "ast.c"
 #include "parse.c"
 #include "asm-tree.c"
+#include "codegen-x64.c"
 
 int
-main(void)
+main(int argc, char **argv)
 {
     // version 0.1
     test_arena_snprintf();
@@ -37,6 +39,7 @@ main(void)
     test_parser_1_valid();
     test_parser_1_invalid();
     test_asm_tree();
+    test_codegen_x64_1();
 
     return 0;
 }

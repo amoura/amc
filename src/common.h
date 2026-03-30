@@ -89,8 +89,10 @@ typedef double r64;
 #define Mb(x)			(1024*1024*(x))
 #define Gb(x)			(1024*1024*1024*(x))
 
-#define for_i(T,i,n)    for(T i=0; i<(n); i++)
-#define for_array(i,arr) for(u64 i=0; i<array_len(arr); i++)
+#define for_i(T,i,n)       for(T i=0; i<(n); i++)
+#define for_arr(i,arr)     for(u64 i=0; i<(arr).len; i++)
+#define for_arrp(i,arrp)   for(u64 i=0; i<(arr)->len; i++)
+#define for_array(i,array) for(u64 i=0; i<array_len(array); i++)
 
 
 ////////////////////////////////////////////////////////////

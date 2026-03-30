@@ -65,7 +65,9 @@ new_asm_program_node(arena *ar, asm_program p)
 // Generating asm_program from Ast
 
 void
-push_instrs_from_expr_ast(arena *ar, asm_instr_arr *instr_arr, ast *expr)
+push_instrs_from_expr_ast(arena *ar,
+                          asm_instr_arr *instr_arr,
+                          ast *expr)
 {
     assert(expr);
     assert(expr->type == AST_EXPR);

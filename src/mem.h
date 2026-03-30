@@ -10,21 +10,20 @@ typedef struct {
     bool 	is_sub_arena;
 } arena;
 
-arena 	make_arena(u64 		size);
-arena 	make_sub_arena(arena 	*super_arena,
-		     u64	size);
-u64 	arena_pos(arena 		*ar);
-void 	arena_pop_to_pos(arena 	*ar,
-		      u64	pos);
-void * 	arena_alloc(arena 	*ar,
-		   u64 		nbytes);
-void 	arena_reset(arena 	*ar);
-void 	free_arena(arena 	*ar);
+arena 	make_arena(u64 size);
+arena 	make_sub_arena(arena *super_arena, u64 size);
+u64 	arena_pos(arena *ar);
+void 	arena_pop_to_pos(arena *ar, u64	pos);
+void * 	arena_alloc(arena *ar, u64 nbytes);
+void 	arena_reset(arena *ar);
+void 	free_arena(arena *ar);
+char *  arena_sprintf(arena *ar, const char *fmt, ...);
 
-#define arena_alloc_type(a,T)		(T*) arena_alloc(a, sizeof(T))
-#define arena_alloc_type_n(a,T,n)		(T*) arena_alloc(a, sizeof(T)*(n))
+#define arena_alloc_type(a,T)           (T*) arena_alloc(a, sizeof(T))
+#define arena_alloc_type_n(a,T,n)       (T*) arena_alloc(a, sizeof(T)*(n))
 
-
+// use this to define a dynamic array.
+// def_dyn_arr(T) defines a dynamic array T_arr.
 #define def_dyn_arr(T) \
     typedef struct {\
         size_t len;\
@@ -35,6 +34,7 @@ void 	free_arena(arena 	*ar);
 //////////////////////////////////////////////////////////
 // For use with am_stb_ds
 
+#if 0
 typedef struct {
     size_t size;
     u8 data[0];
@@ -53,7 +53,6 @@ arena_noop(void *ar_ptr, void *ptr);
 //   #define STBDS_REALLOC   arena_realloc
 //   #define STBDS_FREE      arena_noop
 
-#if 0
 ///////////////////////////////////////////////////////////
 // Dynamic array macros
 

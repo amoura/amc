@@ -1,6 +1,9 @@
-#define STB_DS_IMPLEMENTATION
-#define STBDS_REALLOC   arena_realloc
-#define STBDS_FREE      arena_noop
+//#define STB_DS_IMPLEMENTATION
+//#define STBDS_REALLOC   arena_realloc
+//#define STBDS_FREE      arena_noop
+
+//#define STB_SPRINTF_IMPLEMENTATION 1 
+//#include "stb_sprintf.h"
 
 #include "common.h"
 #include "mem.h"
@@ -23,6 +26,7 @@ int
 main(void)
 {
     // version 0.1
+    test_arena_snprintf();
     test_str_buffer();
     test_str_store();
     test_lexer_1();

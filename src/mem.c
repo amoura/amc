@@ -86,8 +86,35 @@ free_arena(arena	*ar)
 }
 
 
+//////////////////////////////////////////////
+// sprintf into the arena
+
+char *
+arena_sprintf(arena *ar, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    u64 pos0 = arena_pos(ar);
+    char *dst = arena_alloc_type_n(ar, char, 8);
+    int nbytes = vsnprintf(dst, 7, fmt, args);
+    assert(nbytes > 0);
+    if (nbytes > 6) {
+        arena_pop_to_pos(ar, pos0);
+        dst = arena_alloc_type_n(ar, char, nbytes+1);
+        va_start(args, fmt);
+        int nb = vsnprintf(dst, nbytes, fmt, args);
+        assert(nb == nbytes);
+    }
+    va_end(args);
+    return dst;
+}
+
+
 ///////////////////////////////////////////////
 // For integration with am_stb_ds.h
+
+/*
 
 void *
 arena_realloc(void *ar_ptr, void *ptr, size_t size)
@@ -111,4 +138,22 @@ arena_noop(void *ar_ptr, void *ptr)
 {
 }
 
+*/
 
+
+/////////////////////////////////////////////////
+// Tests
+
+void test_arena_snprintf(void)
+{
+    arena ar = make_arena(Mb(1));
+    double a = 23.7899;
+    double b = 1299775.877;
+    double c = a*b;
+    char *msg = arena_sprintf(&ar, "this is a %s: testing %lg * %lg = %lg\n",
+        "big test", a, b, c);
+    assert(msg);
+    //printf("%s", msg);
+
+    free_arena(&ar);
+}

@@ -9,7 +9,7 @@ int main(int argc, char ** argv) {
     arena  ar  = make_arena(Mb(16));
     FILE * out = fopen("..\\src\\dynarr.c.gen", "w");
     assert(out);
-    buffer templ = read_whole_file("..\\src\\dyn_arr_templ.c", &ar);
+    buffer templ = read_whole_file(&ar, "..\\src\\dyn_arr_templ.c");
     assert(templ.contents);
 
     for (int i = 1; i < argc; i++) {

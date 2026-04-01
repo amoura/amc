@@ -37,7 +37,7 @@ int main(int num_args, char ** args) {
         assert(strcmp(out_file_name + in_file_name_size, ".gen") == 0);
         FILE * out = fopen(out_file_name, "w");
 
-        buffer buf  = read_whole_file(in_file_name, &ar);
+        buffer buf  = read_whole_file(&ar, in_file_name);
         char * text = buf.contents;
         for (char * ptr = strstr(text, "\n//gen:enum"); ptr;
              ptr        = strstr(ptr, "\n//gen:enum")) {

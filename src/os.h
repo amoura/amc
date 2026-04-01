@@ -19,7 +19,7 @@ typedef struct {
     size_t len;
 } buffer;
 
-buffer read_whole_file(const char * filename, arena * ar);
+buffer read_whole_file(arena * ar, const char * filename);
 
 typedef struct {
     char * name;

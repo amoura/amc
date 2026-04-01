@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "mem.h"
+#include "os.h"
 #include "str.h"
 #include "lex.h"
 #include "ast.h"
@@ -14,8 +15,9 @@
 #include "asm-tree.h"
 #include "codegen-x64.h"
 
-#include "mem.c"
 #include "dynarr.c.gen"
+#include "mem.c"
+#include "os.c"
 #define TESTING 1
 #include "str.c"
 #include "lex.c"

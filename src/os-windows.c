@@ -14,7 +14,7 @@ thread make_thread(thread_worker *thr_worker,
     );
 }
 
-void	close_thread(thread thr)
+void close_thread(thread thr)
 {
     BOOL ok = CloseHandle(thr);
     assert(ok);

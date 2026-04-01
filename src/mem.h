@@ -17,6 +17,7 @@ void 	arena_pop_to_pos(arena *ar, u64	pos);
 void * 	arena_alloc(arena *ar, u64 nbytes);
 void 	arena_reset(arena *ar);
 void 	free_arena(arena *ar);
+char *  arena_strdup(arena *ar, char *s);
 char *  arena_sprintf(arena *ar, const char *fmt, ...);
 
 #define arena_alloc_type(a,T)           (T*) arena_alloc(a, sizeof(T))

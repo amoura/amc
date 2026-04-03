@@ -6,4 +6,5 @@ gendarr asm_instr
 cl /wd4047 /wd4312 /nologo /Zi /WX /D_HAS_EXCEPTIONS=0 /GR- /fsanitize=address  /Fe:generate.exe ..\src\generate.c
 generate ..\src\lex.h ..\src\ast.h ..\src\asm-tree.h
 cl /wd4047 /wd4312 /nologo /Zi /WX /D_HAS_EXCEPTIONS=0 /GR- /fsanitize=address   /Fe:amc.exe ..\src\main.c
+copy amc.exe amcc.exe
 popd

@@ -73,9 +73,9 @@ void warn_if(bool cond, char * prog_name, char * msg) {
 char * program_name(char * arg) {
     size_t len = strlen(arg);
     assert(len > 0);
-    char * p = arg[len - 1];
+    char * p = arg + len - 1;
     for (; p >= arg && *p != '/' && *p != '\\'; p--);
-    return p;
+    return p + 1;
 }
 
 cmd_line_data parse_cmd_line(int argc, char ** argv) {
@@ -123,9 +123,6 @@ cmd_line_data parse_cmd_line(int argc, char ** argv) {
 }
 
 int main(int argc, char ** argv) {
-    if (argc < 4) {
-        print_usage_and_exit(argv[0], "");
-    }
     char *        prog_name = argv[0];
     cmd_line_data cmd_line  = parse_cmd_line(argc, argv);
 
@@ -134,15 +131,20 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
+    if (argc < 2) {
+        print_usage_and_exit(argv[0], "");
+    }
+
     arena  ar  = make_arena(Mb(128));
     buffer buf = {0};
     if (cmd_line.driver) {
-        char * pp_out_fname = arena_sprintf(&ar, "%s.i", cmd_line.in_filename);
-        char * cmd          = arena_sprintf(&ar,
-                                            "gcc -E -P %s -o %s",
-                                            cmd_line.in_filename,
-                                            pp_out_fname);
-        int    ret_code     = system(cmd);
+        char * pp_out_fname =
+            arena_sprintf(&ar, "%s-klm", cmd_line.in_filename);
+        char * cmd      = arena_sprintf(&ar,
+                                        "gcc -E -P %s -o %s",
+                                        cmd_line.in_filename,
+                                        pp_out_fname);
+        int    ret_code = system(cmd);
         error_and_exit_if(ret_code != 0,
                           prog_name,
                           "failed to call preprocessor");
@@ -161,7 +163,7 @@ int main(int argc, char ** argv) {
 
     char *    text = buf.contents;
     str_store st   = make_str_store(&ar, Mb(16), 100003);
-    lexer     lex  = make_lexer(text, "tst.c", strlen(text), &st);
+    lexer     lex  = make_lexer(text, cmd_line.in_filename, strlen(text), &st);
     if (cmd_line.mode == EXEC_MODE_LEXER_TEST) {
         token tok = {0};
         for (tok = next_token(&lex); tok.type != TOK_EOF && tok.type != TOK_ERR;

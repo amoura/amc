@@ -69,7 +69,7 @@ void free_arena(arena * ar) {
 }
 
 //////////////////////////////////////////////
-// arena strung utilities
+// arena string utilities
 
 bool str_eq_n(char * s1, char * s2, u64 len) {
     return strncmp(s1, s2, len) == 0;
@@ -99,7 +99,7 @@ char * arena_sprintf(arena * ar, const char * fmt, ...) {
         arena_pop_to_pos(ar, pos0);
         dst = arena_alloc_type_n(ar, char, nbytes + 1);
         va_start(args, fmt);
-        int nb = vsnprintf(dst, nbytes, fmt, args);
+        int nb = vsnprintf(dst, nbytes + 1, fmt, args);
         assert(nb == nbytes);
     }
     va_end(args);

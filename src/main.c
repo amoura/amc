@@ -39,25 +39,66 @@ typedef enum {
 
 typedef struct {
     exec_mode mode;
-    char *    filename;
+    bool      driver;
+    char *    in_filename;
+    char *    out_filename;
 } cmd_line_data;
 
 void print_usage_and_exit(const char * prog_name, const char * msg) {
     fprintf(stderr, "%s: ERROR: %s\n\n", prog_name, msg);
     fprintf(stderr, "%s: usage:\n", prog_name);
     fprintf(stderr,
-            "%s [--basic-test | --lexer-test | --parser-test | --no-output] "
-            "<file name>\n",
+            "%s [--basic-test | --lexer-test | --parser-test | --no-output] \n"
+            "    -o <output-file-name> <input-file-name>\n",
             prog_name);
     exit(1);
+}
+
+void error_and_exit_if(bool cond, char * prog_name, char * msg) {
+    if (!cond) {
+        return;
+    }
+    fprintf(stderr, "%s: ERROR: %s\n", prog_name, msg);
+    exit(1);
+}
+
+void warn_if(bool cond, char * prog_name, char * msg) {
+    if (!cond) {
+        return;
+    }
+    fprintf(stderr, "%s: warning: %s\n", prog_name, msg);
+    exit(1);
+}
+
+char * program_name(char * arg) {
+    size_t len = strlen(arg);
+    assert(len > 0);
+    char * p = arg[len - 1];
+    for (; p >= arg && *p != '/' && *p != '\\'; p--);
+    return p;
 }
 
 cmd_line_data parse_cmd_line(int argc, char ** argv) {
     cmd_line_data result = {0};
     result.mode          = EXEC_MODE_NORMAL;
+    char * prog_name     = program_name(argv[0]);
+    if (str_eq(prog_name, "amcc")) {
+        result.driver = true;
+    } else if (str_eq(prog_name, "amc")) {
+        result.driver = false;
+    } else {
+        print_usage_and_exit(prog_name, "I don't know who I am!");
+    }
 
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--basic-test") == 0) {
+        if (strcmp(argv[i], "-o") == 0) {
+            i++;
+            assert(i <= argc);
+            if (i == argc) {
+                print_usage_and_exit(prog_name, "missing output file name");
+            }
+            result.out_filename = argv[i];
+        } else if (strcmp(argv[i], "--basic-test") == 0) {
             result.mode = EXEC_MODE_BASIC_TEST;
         } else if (strcmp(argv[i], "--lexer-test") == 0) {
             result.mode = EXEC_MODE_LEXER_TEST;
@@ -66,34 +107,56 @@ cmd_line_data parse_cmd_line(int argc, char ** argv) {
         } else if (strcmp(argv[i], "--no-output") == 0) {
             result.mode = EXEC_MODE_NO_OUTPUT;
         } else {  // must be the filename
-            if (result.filename != NULL) {
-                print_usage_and_exit(argv[0], "multiple input files");
+            if (result.in_filename != NULL) {
+                print_usage_and_exit(prog_name, "multiple input files");
             }
-            result.filename = argv[i];
+            result.in_filename = argv[i];
         }
-        if (result.filename == NULL && result.mode != EXEC_MODE_BASIC_TEST) {
-            print_usage_and_exit(argv[0], "no input file");
-        }
+    }
+    if (result.in_filename == NULL && result.mode != EXEC_MODE_BASIC_TEST) {
+        print_usage_and_exit(prog_name, "no input file");
+    }
+    if (result.out_filename == NULL && result.mode == EXEC_MODE_NORMAL) {
+        print_usage_and_exit(prog_name, "no output file");
     }
     return result;
 }
 
 int main(int argc, char ** argv) {
-    basic_tests();
-
-    if (argc < 2) {
-        print_usage_and_exit(argv[0], "no input file");
+    if (argc < 4) {
+        print_usage_and_exit(argv[0], "");
     }
-    cmd_line_data cmd_line = parse_cmd_line(argc, argv);
+    char *        prog_name = argv[0];
+    cmd_line_data cmd_line  = parse_cmd_line(argc, argv);
 
+    basic_tests();
     if (cmd_line.mode == EXEC_MODE_BASIC_TEST) {
         return 0;
     }
 
     arena  ar  = make_arena(Mb(128));
-    buffer buf = read_whole_file(&ar, cmd_line.filename);
-    if (buf.contents == NULL) {
-        print_usage_and_exit(argv[0], "could not read input file");
+    buffer buf = {0};
+    if (cmd_line.driver) {
+        char * pp_out_fname = arena_sprintf(&ar, "%s.i", cmd_line.in_filename);
+        char * cmd          = arena_sprintf(&ar,
+                                            "gcc -E -P %s -o %s",
+                                            cmd_line.in_filename,
+                                            pp_out_fname);
+        int    ret_code     = system(cmd);
+        error_and_exit_if(ret_code != 0,
+                          prog_name,
+                          "failed to call preprocessor");
+        buf = read_whole_file(&ar, pp_out_fname);
+        error_and_exit_if(!buf.contents,
+                          prog_name,
+                          "failed to read preprocessor's output");
+        ret_code = remove(pp_out_fname);
+        warn_if(ret_code != 0,
+                prog_name,
+                "could not delete proprocessor's output");
+    } else {
+        buf = read_whole_file(&ar, cmd_line.in_filename);
+        error_and_exit_if(!buf.contents, prog_name, "failed to read input");
     }
 
     char *    text = buf.contents;
@@ -109,7 +172,7 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
-    parser p       = make_parser(text, cmd_line.filename, &st, &ar);
+    parser p       = make_parser(text, cmd_line.in_filename, &st, &ar);
     ast *  program = parse_program(&p);
     assert(program);
     if (program->type == AST_ERR) {
@@ -131,16 +194,16 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
-    FILE * out = fopen(cmd_line.filename, "w");
+    FILE * out = fopen(cmd_line.out_filename, "w");
     if (out == NULL) {
         fprintf(stderr,
                 "error: could not open output file %s\n",
-                cmd_line.filename);
+                cmd_line.out_filename);
         return 1;
     }
     asm_node_codegen_x64(out, node);
-
     fclose(out);
+
     return 0;
 }
 

@@ -71,6 +71,14 @@ void free_arena(arena * ar) {
 //////////////////////////////////////////////
 // arena strung utilities
 
+bool str_eq_n(char * s1, char * s2, u64 len) {
+    return strncmp(s1, s2, len) == 0;
+}
+
+bool str_eq(char * s1, char * s2) {
+    return strcmp(s1, s2) == 0;
+}
+
 char * arena_strdup(arena * ar, char * s) {
     size_t len = strlen(s);
     char * res = arena_alloc_type_n(ar, char, len + 1);

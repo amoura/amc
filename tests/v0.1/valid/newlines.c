@@ -1,10 +1,4 @@
-int
-main
-(
-void
-)
-{
-return
-0
-;
-}
+    .globl main
+main:
+    movl $0, %eax
+    ret

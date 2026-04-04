@@ -76,6 +76,12 @@ const char * token_type_to_msg(token_type type) {
             return "'}'";
         case TOK_SEMICOLON:
             return "';'";
+        case TOK_MINUS:
+            return "'-'";
+        case TOK_MINUS_MINUS:
+            return "'--'";
+        case TOK_TILDE:
+            return "'~'";
         case TOK_INT:
             return "'int'";
         case TOK_VOID:
@@ -93,7 +99,6 @@ const char * token_type_to_msg(token_type type) {
         default:
             assert(false);
     }
-    assert(false);
     return NULL;
 }
 
@@ -308,6 +313,21 @@ token next_token(lexer * lex) {
             lex->pos++;
             break;
 
+        case '-':
+            lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '-') {
+                lex->pos++;
+                tok.type = TOK_MINUS_MINUS;
+            } else {
+                tok.type = TOK_MINUS;
+            }
+            break;
+
+        case '~':
+            tok.type = TOK_TILDE;
+            lex->pos++;
+            break;
+
         case '1':
         case '2':
         case '3':
@@ -432,7 +452,7 @@ void require_next_token(lexer * lex, token tok) {
 void test_lexer_1() {
     char text[] =
         "int main(void) {\n"
-        "    return 102;\n"
+        "    return ~(-102);\n"
         "}\n";
 
     arena     ar  = make_arena(Mb(8));
@@ -462,8 +482,20 @@ void test_lexer_1() {
     assert(tok.type == TOK_RETURN);
 
     tok = next_token(&lex);
+    assert(tok.type == TOK_TILDE);
+
+    tok = next_token(&lex);
+    assert(tok.type == TOK_OPEN_PAR);
+
+    tok = next_token(&lex);
+    assert(tok.type == TOK_MINUS);
+
+    tok = next_token(&lex);
     assert(tok.type == TOK_INT_LIT);
     assert(tok.int_val == 102);
+
+    tok = next_token(&lex);
+    assert(tok.type == TOK_CLOSE_PAR);
 
     tok = next_token(&lex);
     assert(tok.type == TOK_SEMICOLON);

@@ -1,9 +1,13 @@
 #ifndef LEX_H
 #define LEX_H
 
-//gen:enum
+// gen:enum
 typedef enum token_type {
     TOK_NONE,
+
+    TOK_MINUS,
+    TOK_MINUS_MINUS,
+    TOK_TILDE,
 
     TOK_OPEN_PAR,
     TOK_CLOSE_PAR,
@@ -24,10 +28,10 @@ typedef enum token_type {
 
 typedef struct {
     token_type type;
-    u64 pos;
+    u64        pos;
     union {
-        char *str_val;
-        int int_val;
+        char * str_val;
+        int    int_val;
     };
 } token;
 
@@ -37,20 +41,17 @@ typedef struct {
 } text_pos;
 
 typedef struct {
-    char *text;
-    char *source;
-    u64 len;
-    u64 pos;
-    str_store *st;
+    char *      text;
+    char *      source;
+    u64         len;
+    u64         pos;
+    str_store * st;
 } lexer;
 
-lexer
-make_lexer(char *text, char *source, u64 len, str_store *st);
+lexer make_lexer(char * text, char * source, u64 len, str_store * st);
 
-token
-next_token(lexer *lex);
+token next_token(lexer * lex);
 
-text_pos
-get_text_pos(lexer *lex);
+text_pos get_text_pos(lexer * lex);
 
-#endif // LEX_H
+#endif  // LEX_H

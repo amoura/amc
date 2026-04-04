@@ -39,20 +39,20 @@ int main(int num_args, char ** args) {
 
         buffer buf  = read_whole_file(&ar, in_file_name);
         char * text = buf.contents;
-        for (char * ptr = strstr(text, "\n//gen:enum"); ptr;
-             ptr        = strstr(ptr, "\n//gen:enum")) {
+        for (char * ptr = strstr(text, "\n// gen:enum"); ptr;
+             ptr        = strstr(ptr, "\n// gen:enum")) {
             ptr++;
             ptr = strchr(ptr, '\n');
             ptr = skip_whitespace_(ptr);
             ptr = expect_(ptr, "typedef enum ");
-            error_if(ptr == NULL, "expect_ed enum");
+            error_if(ptr == NULL, "expected enum");
 
             ptr         = skip_whitespace_(ptr);
             char * ptr0 = ptr;
             while (*ptr && (isalpha(*ptr) || *ptr == '_')) {
                 ptr++;
             }
-            error_if(ptr == ptr0, "expect_ed identifier");
+            error_if(ptr == ptr0, "expected identifier");
             char * enum_name = arena_alloc_type_n(&ar, char, ptr - ptr0 + 1);
             memcpy(enum_name, ptr0, ptr - ptr0);
             assert(strlen(enum_name) == ptr - ptr0);

@@ -1,4 +1,10 @@
-    .globl main
-main:
-    movl $0, %eax
-    ret
+int
+main
+(
+void
+)
+{
+return
+0
+;
+}

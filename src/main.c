@@ -138,13 +138,12 @@ int main(int argc, char ** argv) {
     arena  ar  = make_arena(Mb(128));
     buffer buf = {0};
     if (cmd_line.driver) {
-        char * pp_out_fname =
-            arena_sprintf(&ar, "%s-klm", cmd_line.in_filename);
-        char * cmd      = arena_sprintf(&ar,
-                                        "gcc -E -P %s -o %s",
-                                        cmd_line.in_filename,
-                                        pp_out_fname);
-        int    ret_code = system(cmd);
+        char * pp_out_fname = arena_sprintf(&ar, "%s.i", cmd_line.in_filename);
+        char * cmd          = arena_sprintf(&ar,
+                                            "gcc -E -P %s -o %s",
+                                            cmd_line.in_filename,
+                                            pp_out_fname);
+        int    ret_code     = system(cmd);
         error_and_exit_if(ret_code != 0,
                           prog_name,
                           "failed to call preprocessor");
@@ -196,15 +195,31 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
-    FILE * out = fopen(cmd_line.out_filename, "w");
-    if (out == NULL) {
-        fprintf(stderr,
-                "error: could not open output file %s\n",
-                cmd_line.out_filename);
-        return 1;
+    if (cmd_line.driver) {
+        char * asm_out_fname = arena_sprintf(&ar, "%s.s", cmd_line.in_filename);
+
+        FILE * out = fopen(asm_out_fname, "w");
+        error_and_exit_if(out == NULL, prog_name, "could not open output file");
+        asm_node_codegen_x64(out, node);
+        fclose(out);
+
+        char * cmd      = arena_sprintf(&ar,
+                                        "gcc %s -o %s",
+                                        asm_out_fname,
+                                        cmd_line.out_filename);
+        int    ret_code = system(cmd);
+        error_and_exit_if(ret_code != 0, prog_name, "failed to call assembler");
+
+        ret_code = remove(asm_out_fname);
+        warn_if(ret_code != 0,
+                prog_name,
+                "could not delete assembler's output");
+    } else {
+        FILE * out = fopen(cmd_line.out_filename, "w");
+        error_and_exit_if(out == NULL, prog_name, "could not open output file");
+        asm_node_codegen_x64(out, node);
+        fclose(out);
     }
-    asm_node_codegen_x64(out, node);
-    fclose(out);
 
     return 0;
 }

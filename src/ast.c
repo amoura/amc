@@ -4,6 +4,10 @@ bool ast_is_err(ast * a) {
     return a->type == AST_ERR;
 }
 
+bool is_unary_op(op_type op) {
+    return op == OP_NEG || op == OP_BIT_NEG;
+}
+
 const char * ast_type_to_msg(ast_type type) {
     switch (type) {
         case AST_PROGRAM:

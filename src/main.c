@@ -12,6 +12,7 @@
 #include "lex.h"
 #include "ast.h"
 #include "parse.h"
+#include "ir.h"
 #include "asm-tree.h"
 #include "codegen-x64.h"
 
@@ -23,6 +24,7 @@
 #include "lex.c"
 #include "ast.c"
 #include "parse.c"
+#include "ir.c"
 #include "asm-tree.c"
 #include "codegen-x64.c"
 

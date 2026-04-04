@@ -2,6 +2,12 @@
 #define AMC_IR_H
 
 typedef enum {
+    IR_AST_NONE,
+    IR_AST_FUNCTION,
+    IR_AST_PROGRAM,
+} ir_ast_type;
+
+typedef enum {
     IR_VAL_NONE,
     IR_VAL_CONST,
     IR_VAL_VAR,
@@ -16,8 +22,8 @@ typedef enum {
 typedef struct {
     ir_val_type type;
     union {
-        int    int_val;
-        char * id;
+        int int_val;
+        int var_index;
     };
 } ir_val;
 
@@ -40,13 +46,27 @@ typedef struct {
 } ir_instr;
 def_dyn_arr(ir_instr);
 
+typedef struct ir_ast ir_ast;
+
 typedef struct {
     char *       name;
     ir_instr_arr instrs;
 } ir_function;
 
 typedef struct {
-    ir_function fn;
+    ir_ast * fn;
 } ir_program;
+
+struct ir_ast {
+    ir_ast_type type;
+    union {
+        ir_program  progr;
+        ir_function fn;
+    };
+};
+
+typedef struct {
+    int next_index;
+} ir_emitter;
 
 #endif  // AMC_IR_H

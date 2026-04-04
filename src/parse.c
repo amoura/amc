@@ -108,9 +108,26 @@ ast * parse_statement(parser * p) {
 
 ast * parse_expr(parser * p) {
     token tok = next_token(&p->lex);
-    expect_token(tok, p, TOK_INT_LIT);
-    assert(tok.type == TOK_INT_LIT);
-    return new_expr_constant(p->ar, tok.int_val);
+    switch (tok.type) {
+        case TOK_INT_LIT:
+            return new_expr_constant(p->ar, tok.int_val);
+        case TOK_OPEN_PAR: {
+            ast * a = parse_expr(p);
+            expect_ast(a, p, AST_EXPR);
+            expect_and_consume_token(p, TOK_CLOSE_PAR);
+            return a;
+        }
+        case TOK_MINUS:
+        case TOK_TILDE: {
+            op_type op = (tok.type == TOK_MINUS) ? OP_NEG : OP_BIT_NEG;
+            ast *   a  = parse_expr(p);
+            expect_ast(a, p, AST_EXPR);
+            return new_expr_unop(p->ar, op, a);
+        }
+        default:
+            return new_ast_error_expr(p->ar);
+    }
+    return NULL;
 }
 
 /////////////////////////////////////////////////////////
@@ -122,7 +139,7 @@ void test_parser_1_basic(void) {
     char * text =
         "int main(void)\n"
         "{\n"
-        "    return 105;\n"
+        "    return ~(-105);\n"
         "}\n";
 
     arena     ar = make_arena(Mb(8));
@@ -137,11 +154,22 @@ void test_parser_1_basic(void) {
     assert(a->progr.fn->fn.name == intern_str(&st, "main"));
     assert(a->progr.fn->fn.body->stmt.type == STMT_RETURN);
     assert(a->progr.fn->fn.body->stmt.ret.expr->type == AST_EXPR);
-    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.type == EXPR_CONST);
-    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.value == 105);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.type == EXPR_UNOP);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.op == OP_BIT_NEG);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->type ==
+           AST_EXPR);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.type ==
+           EXPR_UNOP);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.op ==
+           OP_NEG);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.expr
+               ->type == AST_EXPR);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.expr
+               ->expr.type == EXPR_CONST);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.expr
+               ->expr.value == 105);
 
     // print_ast(stdout, a, 0);
-
     free_arena(&ar);
 }
 

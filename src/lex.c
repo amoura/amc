@@ -11,6 +11,10 @@ struct {
     {"return", NULL, TOK_RETURN}
 };
 
+bool token_is_unop(token tok) {
+    return tok.type == TOK_MINUS || tok.type == TOK_TILDE;
+}
+
 token_type token_type_of_str(char * str) {
     for_array(i, keywords) {
         if (keywords[i].str == str) {

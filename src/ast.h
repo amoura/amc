@@ -15,6 +15,7 @@ typedef enum ast_type {
 typedef enum expr_type {
     EXPR_NONE,
     EXPR_CONST,
+    EXPR_UNOP,
 } expr_type;
 
 // gen:enum
@@ -24,10 +25,17 @@ typedef enum stmt_type {
 } stmt_type;
 
 // gen:enum
+typedef enum op_type {
+    OP_NEG,
+    OP_BIT_NEG,
+} op_type;
+
+// gen:enum
 typedef enum ast_error_type {
     AST_ERR_NONE,
     AST_ERR_EXP_TOKEN,
     AST_ERR_EXP_AST,
+    AST_ERR_EXPR,
 } ast_error_type;
 
 typedef struct ast ast;
@@ -41,10 +49,26 @@ typedef struct {
     ast *  body;
 } ast_function;
 
+/////////////////////////////////////////////////////
+// Expressions
+
+typedef struct ast_expr ast_expr;
+
 typedef struct {
+    op_type op;
+    ast *   expr;
+} expr_unop;
+
+struct ast_expr {
     expr_type type;
-    int       value;
-} ast_expr;
+    union {
+        int       value;
+        expr_unop unop;
+    };
+};
+
+///////////////////////////////////////////////////
+// Statements
 
 typedef struct {
     ast * expr;
@@ -54,6 +78,8 @@ typedef struct {
     stmt_type   type;
     stmt_return ret;
 } ast_stmt;
+
+////////////////////////////////////////////////////
 
 typedef struct ast_error {
     struct ast *   next;

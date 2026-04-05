@@ -206,14 +206,14 @@ int main(int argc, char ** argv) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
-    /*
-    asm_node * node = asm_tree_from_ast(&ar, program);
+    asm_node * node = asm_node_from_ir(&ar, ir);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
     if (cmd_line.mode == EXEC_MODE_NO_OUTPUT) {
         return 0;
     }
 
+    /*
     if (cmd_line.driver) {
         char * asm_out_fname = arena_sprintf(&ar, "%s.s", cmd_line.in_filename);
 

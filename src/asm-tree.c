@@ -204,18 +204,6 @@ void test_asm_tree(void) {
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
 
-    /*
-        asm_node * node = asm_tree_from_ast(&ar, a);
-        assert(node);
-        assert(node->type == ASM_NODE_PROGRAM);
-        assert(node->progr.fn.name);
-        assert(node->progr.fn.name == intern_str(&st, "main"));
-        assert(node->progr.fn.instr_arr.len == 2);
-        assert(node->progr.fn.instr_arr.v[0].type == ASM_INSTR_MOV);
-        assert(node->progr.fn.instr_arr.v[1].type == ASM_INSTR_RET);
-        assert(node->progr.fn.instr_arr.v[0].src.type == ASM_OPERAND_IMM);
-        assert(node->progr.fn.instr_arr.v[0].src.value == 105);
-    */
     free_arena(&ar);
 }
 

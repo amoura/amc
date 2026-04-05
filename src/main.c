@@ -35,6 +35,7 @@ typedef enum {
     EXEC_MODE_BASIC_TEST,
     EXEC_MODE_LEXER_TEST,
     EXEC_MODE_PARSER_TEST,
+    EXEC_MODE_IR_TEST,
     EXEC_MODE_NO_OUTPUT,
     EXEC_MODE_NORMAL,
 } exec_mode;
@@ -50,7 +51,8 @@ void print_usage_and_exit(const char * prog_name, const char * msg) {
     fprintf(stderr, "%s: ERROR: %s\n\n", prog_name, msg);
     fprintf(stderr, "%s: usage:\n", prog_name);
     fprintf(stderr,
-            "%s [--basic-test | --lexer-test | --parser-test | --no-output] \n"
+            "%s [--basic-test | --lexer-test | --parser-test | --ir-test | "
+            "--no-output] \n"
             "    -o <output-file-name> <input-file-name>\n",
             prog_name);
     exit(1);
@@ -106,6 +108,8 @@ cmd_line_data parse_cmd_line(int argc, char ** argv) {
             result.mode = EXEC_MODE_LEXER_TEST;
         } else if (strcmp(argv[i], "--parser-test") == 0) {
             result.mode = EXEC_MODE_PARSER_TEST;
+        } else if (strcmp(argv[i], "--ir-test") == 0) {
+            result.mode = EXEC_MODE_IR_TEST;
         } else if (strcmp(argv[i], "--no-output") == 0) {
             result.mode = EXEC_MODE_NO_OUTPUT;
         } else {  // must be the filename
@@ -189,6 +193,18 @@ int main(int argc, char ** argv) {
     if (cmd_line.mode == EXEC_MODE_PARSER_TEST) {
         return 0;
     }
+
+    ir_emitter emitter = {0};
+    ir_ast *   ir      = ir_ast_from_ast(&ar, &emitter, program);
+    if (cmd_line.mode == EXEC_MODE_IR_TEST) {
+        if (ir && ir->type == IR_AST_PROGRAM) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    assert(ir);
+    assert(ir->type == IR_AST_PROGRAM);
 
     asm_node * node = asm_tree_from_ast(&ar, program);
     assert(node);

@@ -38,7 +38,7 @@ for /r "%rootSource%" %%f in (*) do (
     ) else (
         echo "%%~dpf" | findstr /i "valid" >nul
         if !errorlevel! == 0 (
-            build\amcc "%%f" --parser-test
+            build\amcc "%%f" --ir-test
             set lastCode=!errorlevel!
         )
     )

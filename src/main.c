@@ -206,6 +206,7 @@ int main(int argc, char ** argv) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
+    /*
     asm_node * node = asm_tree_from_ast(&ar, program);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
@@ -238,6 +239,7 @@ int main(int argc, char ** argv) {
         asm_node_codegen_x64(out, node);
         fclose(out);
     }
+    */
 
     return 0;
 }

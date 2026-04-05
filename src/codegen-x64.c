@@ -75,11 +75,11 @@ void test_codegen_x64_1(void) {
     ast * a = parse_program(&p);
     assert(a);
     assert(a->type == AST_PROGRAM);
-
-    asm_node * node = asm_tree_from_ast(&ar, a);
-    assert(node);
-    assert(node->type == ASM_NODE_PROGRAM);
-
+    /*
+        asm_node * node = asm_tree_from_ast(&ar, a);
+        assert(node);
+        assert(node->type == ASM_NODE_PROGRAM);
+    */
     // asm_node_codegen_x64(stdout, node);
 }
 

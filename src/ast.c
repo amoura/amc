@@ -4,7 +4,7 @@ bool ast_is_err(ast * a) {
     return a->type == AST_ERR;
 }
 
-bool is_unary_op(op_type op) {
+bool is_unop(op_type op) {
     return op == OP_NEG || op == OP_BIT_NEG;
 }
 

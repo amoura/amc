@@ -35,13 +35,13 @@ typedef struct {
     op_type op;
     ir_val  src;
     ir_val  dst;
-} ir_unary;
+} ir_unop;
 
 typedef struct {
     ir_instr_type type;
     union {
         ir_return ret;
-        ir_unary  unary;
+        ir_unop   unop;
     };
 } ir_instr;
 def_dyn_arr(ir_instr);

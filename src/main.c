@@ -240,4 +240,5 @@ void basic_tests(void) {
     test_parser_1_invalid();
     test_asm_tree();
     test_codegen_x64_1();
+    test_ir_basic();
 }

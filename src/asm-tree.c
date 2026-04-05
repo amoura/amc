@@ -69,7 +69,6 @@ asm_instr make_asm_pop_instr(asm_operand dst) {
 }
 
 asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst) {
-    assert(at_least_one_reg(src, dst));
     assert(asm_is_not_imm(dst));
     return make_asm_instr_2(ASM_INSTR_SUB, src, dst);
 }
@@ -83,7 +82,6 @@ asm_instr make_asm_unop_instr(op_type op, asm_operand src) {
 }
 
 asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
-    assert(at_least_one_reg(src, dst));
     assert(asm_is_not_imm(dst));
     return make_asm_instr_2(ASM_INSTR_MOV, src, dst);
 }
@@ -119,8 +117,10 @@ asm_operand asm_operand_from_ir_val(ir_val val) {
     switch (val.type) {
         case IR_VAL_CONST:
             result = make_imm_asm_operand(val.int_val);
+            break;
         case IR_VAL_VAR:
             result = make_pseudo_reg_asm_operand(val.var_index);
+            break;
         default:
             assert(false);
     }
@@ -175,59 +175,6 @@ asm_node * asm_node_from_ir(arena * ar, ir_ast * ir) {
     return new_asm_program_node(ar, p);
 }
 
-/*
-void push_instrs_from_expr_ast(arena *         ar,
-                               asm_instr_arr * instr_arr,
-                               ast *           expr) {
-    assert(expr);
-    assert(expr->type == AST_EXPR);
-    switch (expr->expr.type) {
-        case EXPR_CONST: {
-            asm_instr instr =
-                make_asm_mov_instr(make_imm_asm_operand(expr->expr.value),
-                                   make_reg_asm_operand(ASM_REG_AX));
-            asm_instr_arr_push(ar, instr_arr, instr);
-            break;
-        }
-
-        default:
-            assert(false);
-    }
-}
-
-asm_function asm_function_from_ast(arena * ar, ast * ast_fn) {
-    assert(ast_fn);
-    assert(ast_fn->type == AST_FUNCTION);
-    assert(ast_fn->fn.name);
-    assert(ast_fn->fn.body);
-    assert(ast_fn->fn.body->type == AST_STMT);
-    assert(ast_fn->fn.body->stmt.type == STMT_RETURN);
-    assert(ast_fn->fn.body->stmt.ret.expr);
-    assert(ast_fn->fn.body->stmt.ret.expr->type == AST_EXPR);
-    assert(ast_fn->fn.body->stmt.ret.expr->expr.type == EXPR_CONST);
-
-    asm_function fn   = make_asm_function(ast_fn->fn.name);
-    ast *        expr = ast_fn->fn.body->stmt.ret.expr;
-    push_instrs_from_expr_ast(ar, &fn.instr_arr, expr);
-    asm_instr_arr_push(ar, &fn.instr_arr, make_asm_ret_instr());
-    return fn;
-}
-
-asm_program asm_program_from_ast(arena * ar, ast_program ast_p) {
-    assert(ast_p.fn);
-    asm_function fn = asm_function_from_ast(ar, ast_p.fn);
-    return make_asm_program(fn);
-}
-
-asm_node * asm_tree_from_ast(arena * ar, ast * a) {
-    assert(a);
-    assert(a->type == AST_PROGRAM);
-    asm_program p    = asm_program_from_ast(ar, a->progr);
-    asm_node *  node = new_asm_program_node(ar, p);
-    return node;
-}
-*/
-
 ///////////////////////////////////////////////////////
 // Tests
 
@@ -237,7 +184,7 @@ void test_asm_tree(void) {
     char * text =
         "int main(void)\n"
         "{\n"
-        "    return 105;\n"
+        "    return ~(-105);\n"
         "}\n";
 
     arena     ar = make_arena(Mb(8));
@@ -247,6 +194,16 @@ void test_asm_tree(void) {
     ast * a = parse_program(&p);
     assert(a);
     assert(a->type == AST_PROGRAM);
+
+    ir_emitter emitter = {0};
+    ir_ast *   ir      = ir_ast_from_ast(&ar, &emitter, a);
+    assert(ir);
+    assert(ir->type == IR_AST_PROGRAM);
+
+    asm_node * node = asm_node_from_ir(&ar, ir);
+    assert(node);
+    assert(node->type == ASM_NODE_PROGRAM);
+
     /*
         asm_node * node = asm_tree_from_ast(&ar, a);
         assert(node);

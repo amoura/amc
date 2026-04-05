@@ -15,23 +15,23 @@ typedef enum instr_type {
 } instr_type;
 
 // gen:enum
-typedef enum operand_type {
+typedef enum asm_operand_type {
     OPERAND_NONE,
     OPERAND_IMM,
     OPERAND_REG,
-} operand_type;
+} asm_operand_type;
 
 typedef struct asm_node asm_node;
 
 typedef struct {
-    operand_type type;
-    int          value;
-} operand;
+    asm_operand_type type;
+    int              value;
+} asm_operand;
 
 typedef struct {
-    instr_type type;
-    operand    src;
-    operand    dst;
+    instr_type  type;
+    asm_operand src;
+    asm_operand dst;
 } asm_instr;
 
 def_dyn_arr(asm_instr);
@@ -52,9 +52,9 @@ struct asm_node {
 ////////////////////////////////////////////////
 // Declarations
 
-operand      make_imm_operand(int value);
-operand      make_reg_operand(void);
-asm_instr    make_asm_mov_instr(operand src, operand dst);
+asm_operand  make_imm_asm_operand(int value);
+asm_operand  make_reg_asm_operand(void);
+asm_instr    make_asm_mov_instr(asm_operand src, asm_operand dst);
 asm_instr    make_asm_ret_instr(void);
 asm_function make_asm_function(char * name);
 asm_program  make_asm_program(asm_function fn);

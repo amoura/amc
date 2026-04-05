@@ -1,10 +1,10 @@
 void asm_operand_codegen_x64(FILE * out, asm_operand oper) {
     switch (oper.type) {
-        case OPERAND_IMM:
+        case ASM_OPERAND_IMM:
             fprintf(out, "$%d", oper.value);
             break;
 
-        case OPERAND_REG:
+        case ASM_OPERAND_REG:
             fprintf(out, "%%eax");
             break;
 
@@ -15,7 +15,7 @@ void asm_operand_codegen_x64(FILE * out, asm_operand oper) {
 
 void asm_instr_codegen_x64(FILE * out, asm_instr instr) {
     switch (instr.type) {
-        case INSTR_MOV:
+        case ASM_INSTR_MOV:
             fprintf(out, "    movl ");
             asm_operand_codegen_x64(out, instr.src);
             fprintf(out, ", ");
@@ -23,7 +23,7 @@ void asm_instr_codegen_x64(FILE * out, asm_instr instr) {
             fprintf(out, "\n");
             break;
 
-        case INSTR_RET:
+        case ASM_INSTR_RET:
             fprintf(out, "    ret\n");
             break;
 

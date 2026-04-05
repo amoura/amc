@@ -9,16 +9,16 @@ typedef enum asm_node_type {
 
 // gen:enum
 typedef enum instr_type {
-    INSTR_NONE,
-    INSTR_MOV,
-    INSTR_RET,
+    ASM_INSTR_NONE,
+    ASM_INSTR_MOV,
+    ASM_INSTR_RET,
 } instr_type;
 
 // gen:enum
 typedef enum asm_operand_type {
-    OPERAND_NONE,
-    OPERAND_IMM,
-    OPERAND_REG,
+    ASM_OPERAND_NONE,
+    ASM_OPERAND_IMM,
+    ASM_OPERAND_REG,
 } asm_operand_type;
 
 typedef struct asm_node asm_node;

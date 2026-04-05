@@ -3,20 +3,20 @@
 
 asm_operand make_imm_asm_operand(int value) {
     asm_operand op = {0};
-    op.type        = OPERAND_IMM;
+    op.type        = ASM_OPERAND_IMM;
     op.value       = value;
     return op;
 }
 
 asm_operand make_reg_asm_operand(void) {
     asm_operand op = {0};
-    op.type        = OPERAND_REG;
+    op.type        = ASM_OPERAND_REG;
     return op;
 }
 
 asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
     asm_instr instr = {0};
-    instr.type      = INSTR_MOV;
+    instr.type      = ASM_INSTR_MOV;
     instr.src       = src;
     instr.dst       = dst;
     return instr;
@@ -24,7 +24,7 @@ asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
 
 asm_instr make_asm_ret_instr(void) {
     asm_instr instr = {0};
-    instr.type      = INSTR_RET;
+    instr.type      = ASM_INSTR_RET;
     return instr;
 }
 
@@ -127,9 +127,9 @@ void test_asm_tree(void) {
     assert(node->progr.fn.name);
     assert(node->progr.fn.name == intern_str(&st, "main"));
     assert(node->progr.fn.instr_arr.len == 2);
-    assert(node->progr.fn.instr_arr.v[0].type == INSTR_MOV);
-    assert(node->progr.fn.instr_arr.v[1].type == INSTR_RET);
-    assert(node->progr.fn.instr_arr.v[0].src.type == OPERAND_IMM);
+    assert(node->progr.fn.instr_arr.v[0].type == ASM_INSTR_MOV);
+    assert(node->progr.fn.instr_arr.v[1].type == ASM_INSTR_RET);
+    assert(node->progr.fn.instr_arr.v[0].src.type == ASM_OPERAND_IMM);
     assert(node->progr.fn.instr_arr.v[0].src.value == 105);
 
     free_arena(&ar);

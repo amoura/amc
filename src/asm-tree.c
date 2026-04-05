@@ -1,6 +1,14 @@
 ///////////////////////////////////
 // Constructors
 
+bool asm_is_not_imm(asm_operand a) {
+    return a.type != ASM_OPERAND_IMM;
+}
+
+bool at_least_one_reg(asm_operand a, asm_operand b) {
+    return a.type == ASM_OPERAND_REG || b.type == ASM_OPERAND_REG;
+}
+
 asm_operand make_imm_asm_operand(int value) {
     asm_operand op = {0};
     op.type        = ASM_OPERAND_IMM;
@@ -8,24 +16,80 @@ asm_operand make_imm_asm_operand(int value) {
     return op;
 }
 
-asm_operand make_reg_asm_operand(void) {
+asm_operand make_reg_asm_operand(asm_reg reg) {
     asm_operand op = {0};
     op.type        = ASM_OPERAND_REG;
+    op.reg         = reg;
     return op;
 }
 
-asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
+asm_operand make_pseudo_reg_asm_operand(int index) {
+    asm_operand op = {0};
+    op.type        = ASM_OPERAND_PSEUDO_REG;
+    op.index       = index;
+    return op;
+}
+
+asm_operand make_stack_asm_operand(int value) {
+    asm_operand op = {0};
+    op.type        = ASM_OPERAND_STACK;
+    op.value       = value;
+    return op;
+}
+
+asm_instr make_asm_instr_0(asm_instr_type type) {
     asm_instr instr = {0};
-    instr.type      = ASM_INSTR_MOV;
+    instr.type      = type;
+    return instr;
+}
+
+asm_instr make_asm_instr_1(asm_instr_type type, asm_operand src) {
+    asm_instr instr = {0};
+    instr.type      = type;
+    instr.src       = src;
+    return instr;
+}
+
+asm_instr make_asm_instr_2(asm_instr_type type,
+                           asm_operand    src,
+                           asm_operand    dst) {
+    asm_instr instr = {0};
+    instr.type      = type;
     instr.src       = src;
     instr.dst       = dst;
     return instr;
 }
 
-asm_instr make_asm_ret_instr(void) {
+asm_instr make_asm_push_instr(asm_operand src) {
+    return make_asm_instr_1(ASM_INSTR_PUSH, src);
+}
+
+asm_instr make_asm_pop_instr(asm_operand dst) {
+    return make_asm_instr_1(ASM_INSTR_POP, dst);
+}
+
+asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst) {
+    assert(at_least_one_reg(src, dst));
+    assert(asm_is_not_imm(dst));
+    return make_asm_instr_2(ASM_INSTR_SUB, src, dst);
+}
+
+asm_instr make_asm_unop_instr(op_type op, asm_operand src) {
     asm_instr instr = {0};
-    instr.type      = ASM_INSTR_RET;
+    instr.type      = ASM_INSTR_UNOP;
+    instr.op        = op;
+    instr.src       = src;
     return instr;
+}
+
+asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
+    assert(at_least_one_reg(src, dst));
+    assert(asm_is_not_imm(dst));
+    return make_asm_instr_2(ASM_INSTR_MOV, src, dst);
+}
+
+asm_instr make_asm_ret_instr(void) {
+    return make_asm_instr_0(ASM_INSTR_RET);
 }
 
 asm_function make_asm_function(char * name) {
@@ -59,7 +123,7 @@ void push_instrs_from_expr_ast(arena *         ar,
         case EXPR_CONST: {
             asm_instr instr =
                 make_asm_mov_instr(make_imm_asm_operand(expr->expr.value),
-                                   make_reg_asm_operand());
+                                   make_reg_asm_operand(ASM_REG_AX));
             asm_instr_arr_push(ar, instr_arr, instr);
             break;
         }

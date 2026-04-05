@@ -8,30 +8,47 @@ typedef enum asm_node_type {
 } asm_node_type;
 
 // gen:enum
-typedef enum instr_type {
+typedef enum asm_instr_type {
     ASM_INSTR_NONE,
+    ASM_INSTR_PUSH,
+    ASM_INSTR_POP,
+    ASM_INSTR_SUB,
+    ASM_INSTR_UNOP,
     ASM_INSTR_MOV,
     ASM_INSTR_RET,
-} instr_type;
+} asm_instr_type;
 
 // gen:enum
 typedef enum asm_operand_type {
     ASM_OPERAND_NONE,
     ASM_OPERAND_IMM,
     ASM_OPERAND_REG,
+    ASM_OPERAND_PSEUDO_REG,
+    ASM_OPERAND_STACK,
 } asm_operand_type;
+
+typedef enum asm_reg {
+    ASM_REG_NONE,
+    ASM_REG_AX,
+    ASM_REG_R10,
+} asm_reg;
 
 typedef struct asm_node asm_node;
 
 typedef struct {
     asm_operand_type type;
-    int              value;
+    union {
+        int     value;
+        asm_reg reg;
+        int     index;
+    };
 } asm_operand;
 
 typedef struct {
-    instr_type  type;
-    asm_operand src;
-    asm_operand dst;
+    asm_instr_type type;
+    op_type        op;
+    asm_operand    src;
+    asm_operand    dst;
 } asm_instr;
 
 def_dyn_arr(asm_instr);
@@ -52,10 +69,18 @@ struct asm_node {
 ////////////////////////////////////////////////
 // Declarations
 
-asm_operand  make_imm_asm_operand(int value);
-asm_operand  make_reg_asm_operand(void);
-asm_instr    make_asm_mov_instr(asm_operand src, asm_operand dst);
-asm_instr    make_asm_ret_instr(void);
+asm_operand make_imm_asm_operand(int value);
+asm_operand make_reg_asm_operand(asm_reg reg);
+asm_operand make_pseudo_reg_asm_operand(int index);
+asm_operand make_stack_asm_operand(int value);
+
+asm_instr make_asm_push_instr(asm_operand src);
+asm_instr make_asm_pop_instr(asm_operand dst);
+asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst);
+asm_instr make_asm_unop_instr(op_type op, asm_operand src);
+asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst);
+asm_instr make_asm_ret_instr(void);
+
 asm_function make_asm_function(char * name);
 asm_program  make_asm_program(asm_function fn);
 asm_node *   new_asm_program_node(arena * ar, asm_program p);

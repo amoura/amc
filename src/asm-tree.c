@@ -112,6 +112,9 @@ asm_node * new_asm_program_node(arena * ar, asm_program p) {
 //////////////////////////////////////////
 // Generating asm_program from IR
 
+//////////////////////////////////////////
+// First pass: generating the assmebly AST
+
 asm_operand asm_operand_from_ir_val(ir_val val) {
     asm_operand result = {0};
     switch (val.type) {
@@ -176,6 +179,56 @@ asm_node * asm_node_from_ir(arena * ar, ir_ast * ir) {
 }
 
 ///////////////////////////////////////////////////////
+// Second pass: replacing pseudo-registers with
+//              stack offsets
+
+void asm_operand_replace_pseudo_reg(asm_operand * oper) {
+    assert(oper);
+    if (oper->type == ASM_OPERAND_PSEUDO_REG) {
+        oper->type  = ASM_OPERAND_STACK;
+        oper->value = oper->index;
+    }
+}
+
+void asm_instr_replace_pseudo_regs(asm_instr * instr) {
+    assert(instr);
+    switch (instr->type) {
+        case ASM_INSTR_SUB:
+        case ASM_INSTR_MOV:
+            asm_operand_replace_pseudo_reg(&instr->src);
+            asm_operand_replace_pseudo_reg(&instr->dst);
+            break;
+
+        case ASM_INSTR_UNOP:
+            asm_operand_replace_pseudo_reg(&instr->src);
+            break;
+
+        default:
+            break;
+    }
+}
+
+void asm_node_replace_pseudo_regs(asm_node * node) {
+    assert(node);
+    assert(node->type == ASM_NODE_PROGRAM);
+
+    asm_instr_arr * instrs = &node->progr.fn.instr_arr;
+    for_arrp(i, instrs) {
+        asm_instr * instr = instrs->v + i;
+        asm_instr_replace_pseudo_regs(instr);
+    }
+}
+
+///////////////////////////////////////////////////////
+// Combining all passes
+
+asm_node * asm_node_from_ir_all_passes(arena * ar, ir_ast * ir) {
+    asm_node * node = asm_node_from_ir(ar, ir);
+    asm_node_replace_pseudo_regs(node);
+    return node;
+}
+
+///////////////////////////////////////////////////////
 // Tests
 
 #ifdef TESTING
@@ -200,7 +253,7 @@ void test_asm_tree(void) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
-    asm_node * node = asm_node_from_ir(&ar, ir);
+    asm_node * node = asm_node_from_ir_all_passes(&ar, ir);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
 

@@ -186,7 +186,7 @@ void asm_operand_replace_pseudo_reg(asm_operand * oper) {
     assert(oper);
     if (oper->type == ASM_OPERAND_PSEUDO_REG) {
         oper->type  = ASM_OPERAND_STACK;
-        oper->value = oper->index;
+        oper->value = 4 * oper->index;
     }
 }
 
@@ -220,11 +220,42 @@ void asm_node_replace_pseudo_regs(asm_node * node) {
 }
 
 ///////////////////////////////////////////////////////
+// Third pass
+
+// TODO: this implementation is memory-inefficient, maybe this
+// can be improved later...
+void asm_node_fix_instrs(arena * ar, asm_node * node) {
+    assert(node);
+    assert(node->type == ASM_NODE_PROGRAM);
+
+    asm_instr_arr * instrs     = &node->progr.fn.instr_arr;
+    asm_instr_arr   new_instrs = {0};
+    for_arrp(i, instrs) {
+        asm_instr * instr = instrs->v + i;
+        if (instr->type == ASM_INSTR_MOV &&
+            instr->src.type == ASM_OPERAND_STACK &&
+            instr->dst.type == ASM_OPERAND_STACK) {
+            asm_instr new_instr1 = *instr;
+            new_instr1.dst       = make_reg_asm_operand(ASM_REG_R10);
+            asm_instr new_instr2 = *instr;
+            new_instr2.src       = make_reg_asm_operand(ASM_REG_R10);
+            asm_instr_arr_push(ar, &new_instrs, new_instr1);
+            asm_instr_arr_push(ar, &new_instrs, new_instr2);
+        } else {
+            asm_instr_arr_push(ar, &new_instrs, *instr);
+        }
+    }
+    // "leaking" memory here
+    node->progr.fn.instr_arr = new_instrs;
+}
+
+///////////////////////////////////////////////////////
 // Combining all passes
 
 asm_node * asm_node_from_ir_all_passes(arena * ar, ir_ast * ir) {
     asm_node * node = asm_node_from_ir(ar, ir);
     asm_node_replace_pseudo_regs(node);
+    asm_node_fix_instrs(ar, node);
     return node;
 }
 

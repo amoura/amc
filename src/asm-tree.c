@@ -130,11 +130,29 @@ asm_operand asm_operand_from_ir_val(ir_val val) {
     return result;
 }
 
-asm_function asm_function_from_ir(arena * ar, ir_ast * ir_fn) {
+asm_function asm_function_from_ir(arena *      ar,
+                                  ir_ast *     ir_fn,
+                                  ir_emitter * emitter) {
     assert(ir_fn);
     assert(ir_fn->type == IR_AST_FUNCTION);
     assert(ir_fn->fn.name);
     asm_function fn = make_asm_function(ir_fn->fn.name);
+
+    // Function prologue
+    asm_instr_arr_push(ar,
+                       &fn.instr_arr,
+                       make_asm_push_instr(make_reg_asm_operand(ASM_REG_RBP)));
+    asm_instr_arr_push(ar,
+                       &fn.instr_arr,
+                       make_asm_mov_instr(make_reg_asm_operand(ASM_REG_RSP),
+                                          make_reg_asm_operand(ASM_REG_RBP)));
+    asm_instr_arr_push(
+        ar,
+        &fn.instr_arr,
+        make_asm_sub_instr(make_imm_asm_operand(4 * emitter->next_index),
+                           make_reg_asm_operand(ASM_REG_RSP)));
+
+    // Function body
     for_arr(i, ir_fn->fn.instrs) {
         ir_instr instr = ir_fn->fn.instrs.v[i];
         switch (instr.type) {
@@ -144,6 +162,16 @@ asm_function asm_function_from_ir(arena * ar, ir_ast * ir_fn) {
                 asm_instr_arr_push(ar,
                                    &fn.instr_arr,
                                    make_asm_mov_instr(src, dst));
+                // Function epilogue
+                asm_instr_arr_push(
+                    ar,
+                    &fn.instr_arr,
+                    make_asm_mov_instr(make_reg_asm_operand(ASM_REG_RBP),
+                                       make_reg_asm_operand(ASM_REG_RSP)));
+                asm_instr_arr_push(
+                    ar,
+                    &fn.instr_arr,
+                    make_asm_pop_instr(make_reg_asm_operand(ASM_REG_RBP)));
                 asm_instr_arr_push(ar, &fn.instr_arr, make_asm_ret_instr());
             } break;
 
@@ -162,19 +190,22 @@ asm_function asm_function_from_ir(arena * ar, ir_ast * ir_fn) {
                 assert(false);
         }
     }
+
     return fn;
 }
 
-asm_program asm_program_from_ir(arena * ar, ir_program ir_p) {
+asm_program asm_program_from_ir(arena *      ar,
+                                ir_program   ir_p,
+                                ir_emitter * emitter) {
     assert(ir_p.fn);
-    asm_function fn = asm_function_from_ir(ar, ir_p.fn);
+    asm_function fn = asm_function_from_ir(ar, ir_p.fn, emitter);
     return make_asm_program(fn);
 }
 
-asm_node * asm_node_from_ir(arena * ar, ir_ast * ir) {
+asm_node * asm_node_from_ir(arena * ar, ir_ast * ir, ir_emitter * emitter) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
-    asm_program p = asm_program_from_ir(ar, ir->progr);
+    asm_program p = asm_program_from_ir(ar, ir->progr, emitter);
     return new_asm_program_node(ar, p);
 }
 
@@ -252,8 +283,10 @@ void asm_node_fix_instrs(arena * ar, asm_node * node) {
 ///////////////////////////////////////////////////////
 // Combining all passes
 
-asm_node * asm_node_from_ir_all_passes(arena * ar, ir_ast * ir) {
-    asm_node * node = asm_node_from_ir(ar, ir);
+asm_node * asm_node_from_ir_all_passes(arena *      ar,
+                                       ir_ast *     ir,
+                                       ir_emitter * emitter) {
+    asm_node * node = asm_node_from_ir(ar, ir, emitter);
     asm_node_replace_pseudo_regs(node);
     asm_node_fix_instrs(ar, node);
     return node;
@@ -284,7 +317,7 @@ void test_asm_tree(void) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
-    asm_node * node = asm_node_from_ir_all_passes(&ar, ir);
+    asm_node * node = asm_node_from_ir_all_passes(&ar, ir, &emitter);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
 

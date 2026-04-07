@@ -48,7 +48,7 @@ ir_ast * new_ir_program(arena * ar, ir_ast * fn) {
 // Emit IR from AST
 
 ir_val get_new_ir_var(ir_emitter * emitter) {
-    return make_ir_var(emitter->next_index++);
+    return make_ir_var(++emitter->next_index);
 }
 
 ir_val push_ir_instrs_from_expr(arena *        ar,

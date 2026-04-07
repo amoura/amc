@@ -206,7 +206,7 @@ int main(int argc, char ** argv) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
-    asm_node * node = asm_node_from_ir(&ar, ir);
+    asm_node * node = asm_node_from_ir(&ar, ir, &emitter);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
     if (cmd_line.mode == EXEC_MODE_NO_OUTPUT) {

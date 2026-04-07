@@ -29,6 +29,8 @@ typedef enum asm_operand_type {
 
 typedef enum asm_reg {
     ASM_REG_NONE,
+    ASM_REG_RBP,
+    ASM_REG_RSP,
     ASM_REG_AX,
     ASM_REG_R10,
 } asm_reg;

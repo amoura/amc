@@ -33,7 +33,16 @@ typedef enum asm_reg {
     ASM_REG_RSP,
     ASM_REG_AX,
     ASM_REG_R10,
+    ASM_REG_COUNT
 } asm_reg;
+
+char * reg_strs[] = {
+    "(none)",
+    "%%rbp",
+    "%%rsp",
+    "%%eax",
+    "%%r10d",
+};
 
 typedef struct asm_node asm_node;
 

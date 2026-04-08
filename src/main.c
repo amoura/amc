@@ -206,14 +206,13 @@ int main(int argc, char ** argv) {
     assert(ir);
     assert(ir->type == IR_AST_PROGRAM);
 
-    asm_node * node = asm_node_from_ir(&ar, ir, &emitter);
+    asm_node * node = asm_node_from_ir_all_passes(&ar, ir, &emitter);
     assert(node);
     assert(node->type == ASM_NODE_PROGRAM);
     if (cmd_line.mode == EXEC_MODE_NO_OUTPUT) {
         return 0;
     }
 
-    /*
     if (cmd_line.driver) {
         char * asm_out_fname = arena_sprintf(&ar, "%s.s", cmd_line.in_filename);
 
@@ -239,7 +238,6 @@ int main(int argc, char ** argv) {
         asm_node_codegen_x64(out, node);
         fclose(out);
     }
-    */
 
     return 0;
 }

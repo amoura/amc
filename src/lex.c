@@ -76,6 +76,14 @@ const char * token_type_to_msg(token_type type) {
             return "'}'";
         case TOK_SEMICOLON:
             return "';'";
+        case TOK_PERCENT:
+            return "'%%'";
+        case TOK_STAR:
+            return "'*'";
+        case TOK_SLASH:
+            return "'/'";
+        case TOK_PLUS:
+            return "'+'";
         case TOK_MINUS:
             return "'-'";
         case TOK_MINUS_MINUS:
@@ -310,6 +318,27 @@ token next_token(lexer * lex) {
 
         case ';':
             tok.type = TOK_SEMICOLON;
+            lex->pos++;
+            break;
+
+        case '*':
+            tok.type = TOK_STAR;
+            lex->pos++;
+            break;
+
+        case '/':
+            tok.type = TOK_SLASH;
+            lex->pos++;
+            break;
+
+        case '%':
+            tok.type = TOK_PERCENT;
+            lex->pos++;
+            break;
+
+        case '+':
+            // TODO: account for '++' as well
+            tok.type = TOK_PLUS;
             lex->pos++;
             break;
 

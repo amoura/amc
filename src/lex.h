@@ -15,6 +15,11 @@ typedef enum token_type {
     TOK_CLOSE_BRACE,
     TOK_SEMICOLON,
 
+    TOK_STAR,
+    TOK_SLASH,
+    TOK_PLUS,
+    TOK_PERCENT,
+
     TOK_INT,
     TOK_VOID,
     TOK_RETURN,
@@ -48,10 +53,8 @@ typedef struct {
     str_store * st;
 } lexer;
 
-lexer make_lexer(char * text, char * source, u64 len, str_store * st);
-
-token next_token(lexer * lex);
-
+lexer    make_lexer(char * text, char * source, u64 len, str_store * st);
+token    next_token(lexer * lex);
 text_pos get_text_pos(lexer * lex);
 
 #endif  // LEX_H

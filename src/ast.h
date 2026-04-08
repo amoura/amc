@@ -16,6 +16,7 @@ typedef enum expr_type {
     EXPR_NONE,
     EXPR_CONST,
     EXPR_UNOP,
+    EXPR_BINOP,
 } expr_type;
 
 // gen:enum
@@ -28,6 +29,12 @@ typedef enum stmt_type {
 typedef enum op_type {
     OP_NEG,
     OP_BIT_NEG,
+
+    OP_MINUS,
+    OP_PLUS,
+    OP_MUL,
+    OP_DIV,
+    OP_REM,
 } op_type;
 
 // gen:enum
@@ -59,11 +66,18 @@ typedef struct {
     ast *   expr;
 } expr_unop;
 
+typedef struct {
+    op_type op;
+    ast *   lhs;
+    ast *   rhs;
+} expr_binop;
+
 struct ast_expr {
     expr_type type;
     union {
-        int       value;
-        expr_unop unop;
+        int        value;
+        expr_unop  unop;
+        expr_binop binop;
     };
 };
 

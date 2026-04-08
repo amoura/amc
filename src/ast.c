@@ -8,6 +8,19 @@ bool is_unop(op_type op) {
     return op == OP_NEG || op == OP_BIT_NEG;
 }
 
+bool is_binop(op_type op) {
+    bool result = false;
+    switch (op) {
+        case OP_MINUS:
+        case OP_PLUS:
+        case OP_MUL:
+        case OP_DIV:
+        case OP_REM:
+            result = true;
+    }
+    return result;
+}
+
 const char * ast_type_to_msg(ast_type type) {
     switch (type) {
         case AST_PROGRAM:
@@ -104,11 +117,28 @@ ast * new_expr_constant(arena * ar, int value) {
 ast * new_expr_unop(arena * ar, op_type op, ast * expr) {
     assert(ar);
     assert(expr);
+    assert(is_unop(op));
+
     ast * a           = arena_alloc_type(ar, ast);
     a->type           = AST_EXPR;
     a->expr.type      = EXPR_UNOP;
     a->expr.unop.op   = op;
     a->expr.unop.expr = expr;
+    return a;
+}
+
+ast * new_expr_binop(arena * ar, op_type op, ast * lhs, ast * rhs) {
+    assert(ar);
+    assert(lhs);
+    assert(rhs);
+    assert(is_binop(op));
+
+    ast * a           = arena_alloc_type(ar, ast);
+    a->type           = AST_EXPR;
+    a->expr.type      = EXPR_BINOP;
+    a->expr.binop.op  = op;
+    a->expr.binop.lhs = lhs;
+    a->expr.binop.rhs = rhs;
     return a;
 }
 

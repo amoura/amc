@@ -38,8 +38,23 @@ for /r "%rootSource%" %%f in (*) do (
     ) else (
         echo "%%~dpf" | findstr /i "valid" >nul
         if !errorlevel! == 0 (
-            build\amcc "%%f" --no-output
-            set lastCode=!errorlevel!
+            build\amcc %%f -o %%f.amcc.exe
+            if !errorlevel! == 0 (
+                %%f.amcc.exe
+                set amccRetCode=!errorlevel!
+                del %%f.amcc.exe
+
+                gcc %%f -o %%f.gcc.exe
+                %%f.gcc.exe
+                set gccRetCode=!errorlevel!
+                del %%f.gcc.exe
+
+                if !amccRetCode! == !gccRetCode! (
+                    set lastCode=0
+                ) else (
+                    set lastCode=1
+                )
+            )
         )
     )
 

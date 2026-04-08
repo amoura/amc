@@ -662,4 +662,19 @@ void test_lexer_1_valid(void) {
         "int	main	(	void)	{	return	0	;	}");
 }
 
+void test_lexer_3_valid(void) {
+    char * text =
+        "int main(void) {\n"
+        "return -(21*3 + 4/2 % 2);\n"
+        "}\n";
+    token_type types[] = {
+        TOK_INT,         TOK_ID,         TOK_OPEN_PAR,  TOK_VOID,
+        TOK_CLOSE_PAR,   TOK_OPEN_BRACE, TOK_RETURN,    TOK_MINUS,
+        TOK_OPEN_PAR,    TOK_INT_LIT,    TOK_STAR,      TOK_INT_LIT,
+        TOK_PLUS,        TOK_INT_LIT,    TOK_SLASH,     TOK_INT_LIT,
+        TOK_PERCENT,     TOK_INT_LIT,    TOK_CLOSE_PAR, TOK_SEMICOLON,
+        TOK_CLOSE_BRACE, TOK_EOF};
+    check_lexing(text, types, array_len(types));
+}
+
 #endif  // TESTING

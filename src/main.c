@@ -243,18 +243,18 @@ int main(int argc, char ** argv) {
 }
 
 void basic_tests(void) {
-    // v0.1
     test_arena_snprintf();
     test_str_buffer();
     test_str_store();
     test_lexer_1();
     test_lexer_1_invalid();
     test_lexer_1_valid();
+    test_lexer_3_valid();
     test_ast_1();
     test_parser_1_basic();
     test_parser_1_valid();
     test_parser_1_invalid();
     test_asm_tree();
-    test_codegen_x64_1();
     test_ir_basic();
+    test_codegen_x64_1();
 }

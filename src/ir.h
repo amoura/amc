@@ -16,7 +16,8 @@ typedef enum {
 typedef enum {
     IR_INSTR_NONE,
     IR_INSTR_RETURN,
-    IR_INSTR_UNARY,
+    IR_INSTR_UNOP,
+    IR_INSTR_BINOP,
 } ir_instr_type;
 
 typedef struct {
@@ -38,10 +39,18 @@ typedef struct {
 } ir_unop;
 
 typedef struct {
+    unop_type op;
+    ir_val    src1;
+    ir_val    src2;
+    ir_val    dst;
+} ir_binop;
+
+typedef struct {
     ir_instr_type type;
     union {
         ir_return ret;
         ir_unop   unop;
+        ir_binop  binop;
     };
 } ir_instr;
 def_dyn_arr(ir_instr);

@@ -21,10 +21,23 @@ ir_instr make_ir_return_instr(ir_val val) {
 
 ir_instr make_ir_unop_instr(unop_type op, ir_val src, ir_val dst) {
     ir_instr instr = {0};
-    instr.type     = IR_INSTR_UNARY;
+    instr.type     = IR_INSTR_UNOP;
     instr.unop.op  = op;
     instr.unop.src = src;
     instr.unop.dst = dst;
+    return instr;
+}
+
+ir_instr make_ir_binop_instr(unop_type op,
+                             ir_val    src1,
+                             ir_val    src2,
+                             ir_val    dst) {
+    ir_instr instr   = {0};
+    instr.type       = IR_INSTR_BINOP;
+    instr.binop.op   = op;
+    instr.binop.src1 = src1;
+    instr.binop.src2 = src2;
+    instr.binop.dst  = dst;
     return instr;
 }
 
@@ -69,6 +82,22 @@ ir_val push_ir_instrs_from_expr(arena *        ar,
             ir_val   dst  = get_new_ir_var(emitter);
             ir_instr unop = make_ir_unop_instr(expr->expr.unop.op, src, dst);
             ir_instr_arr_push(ar, arr, unop);
+            return dst;
+        }
+
+        case EXPR_BINOP: {
+            ir_val   src1 = push_ir_instrs_from_expr(ar,
+                                                     emitter,
+                                                     expr->expr.binop.lhs,
+                                                     arr);
+            ir_val   src2 = push_ir_instrs_from_expr(ar,
+                                                     emitter,
+                                                     expr->expr.binop.rhs,
+                                                     arr);
+            ir_val   dst  = get_new_ir_var(emitter);
+            ir_instr binop =
+                make_ir_binop_instr(expr->expr.binop.op, src1, src2, dst);
+            ir_instr_arr_push(ar, arr, binop);
             return dst;
         }
 
@@ -150,11 +179,21 @@ void print_ir_instr(FILE * stream, ir_instr instr, int indent) {
             fprintf(stream, ")\n");
             break;
 
-        case IR_INSTR_UNARY:
-            fprintf(stream, "Unary(%s, ", unop_type_to_str(instr.unop.op));
+        case IR_INSTR_UNOP:
+            fprintf(stream, "UnaryOp(%s, ", unop_type_to_str(instr.unop.op));
             print_ir_val(stream, instr.unop.src);
             fprintf(stream, ", ");
             print_ir_val(stream, instr.unop.dst);
+            fprintf(stream, ")\n");
+            break;
+
+        case IR_INSTR_BINOP:
+            fprintf(stream, "BinaryOp(%s, ", binop_type_to_str(instr.binop.op));
+            print_ir_val(stream, instr.binop.src1);
+            fprintf(stream, ", ");
+            print_ir_val(stream, instr.binop.src2);
+            fprintf(stream, ", ");
+            print_ir_val(stream, instr.binop.dst);
             fprintf(stream, ")\n");
             break;
 

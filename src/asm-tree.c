@@ -175,7 +175,7 @@ asm_function asm_function_from_ir(arena *      ar,
                 asm_instr_arr_push(ar, &fn.instr_arr, make_asm_ret_instr());
             } break;
 
-            case IR_INSTR_UNARY: {
+            case IR_INSTR_UNOP: {
                 asm_operand src = asm_operand_from_ir_val(instr.unop.src);
                 asm_operand dst = asm_operand_from_ir_val(instr.unop.dst);
                 asm_instr_arr_push(ar,

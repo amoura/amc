@@ -21,6 +21,24 @@ const char * ast_type_to_msg(ast_type type) {
     return NULL;
 }
 
+binop_type binop_type_from_token_type(token_type tok_type) {
+    switch (tok_type) {
+        case TOK_PLUS:
+            return BINOP_PLUS;
+        case TOK_MINUS:
+            return BINOP_MINUS;
+        case TOK_STAR:
+            return BINOP_MUL;
+        case TOK_SLASH:
+            return BINOP_DIV;
+        case TOK_PERCENT:
+            return BINOP_REM;
+        default:
+            assert(false);
+    }
+    return BINOP_NONE;
+}
+
 ////////////////////////////////////////////////
 // Constructors
 

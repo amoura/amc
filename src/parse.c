@@ -71,6 +71,10 @@ void print_parse_error(FILE * stream, parser * p, ast * a) {
         }                                                                      \
     } while (false)
 
+void consume_token(parser * p) {
+    next_token(&p->lex);
+}
+
 /////////////////////////////////////////////////////////
 // Recursive descent
 
@@ -80,6 +84,9 @@ ast * parse_program(parser * p) {
     expect_and_consume_token(p, TOK_EOF);
     return new_ast_program(p->ar, fn);
 }
+
+///////////////////////////////////////////////////
+// Parsing statements
 
 ast * parse_function(parser * p) {
     expect_and_consume_token(p, TOK_INT);
@@ -106,7 +113,10 @@ ast * parse_statement(parser * p) {
     return new_stmt_return(p->ar, expr);
 }
 
-ast * parse_expr(parser * p) {
+///////////////////////////////////////////////////
+// Parsing expressions
+
+ast * parse_factor(parser * p) {
     token tok = next_token(&p->lex);
     switch (tok.type) {
         case TOK_INT_LIT:
@@ -128,6 +138,43 @@ ast * parse_expr(parser * p) {
             return new_ast_error_expr(p->ar);
     }
     return NULL;
+}
+
+ast * parse_expr50(parser * p) {
+    ast * lhs = parse_factor(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_STAR || tok.type == TOK_SLASH ||
+           tok.type == TOK_PERCENT) {
+        consume_token(p);
+        ast * rhs = parse_factor(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
+ast * parse_expr45(parser * p) {
+    ast * lhs = parse_expr50(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_PLUS || tok.type == TOK_MINUS) {
+        consume_token(p);
+        ast * rhs = parse_expr50(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
+ast * parse_expr(parser * p) {
+    return parse_expr45(p);
 }
 
 /////////////////////////////////////////////////////////

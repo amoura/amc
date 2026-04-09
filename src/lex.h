@@ -55,6 +55,7 @@ typedef struct {
 
 lexer    make_lexer(char * text, char * source, u64 len, str_store * st);
 token    next_token(lexer * lex);
+token    lex_peek(lexer * lex);
 text_pos get_text_pos(lexer * lex);
 
 #endif  // LEX_H

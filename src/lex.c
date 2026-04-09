@@ -464,6 +464,13 @@ token next_token(lexer * lex) {
     return tok;
 }
 
+token lex_peek(lexer * lex) {
+    u64   pos0 = lex->pos;
+    token tok  = next_token(lex);
+    lex->pos   = pos0;
+    return tok;
+}
+
 //////////////////////////////////////////////////////////////////
 // Tests
 

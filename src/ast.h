@@ -27,12 +27,14 @@ typedef enum stmt_type {
 
 // gen:enum
 typedef enum unop_type {
+    UNOP_NONE,
     UNOP_NEG,
     UNOP_BIT_NEG,
 } unop_type;
 
 // gen:enum
 typedef enum binop_type {
+    BINOP_NONE,
     BINOP_MINUS,
     BINOP_PLUS,
     BINOP_MUL,

@@ -220,6 +220,26 @@ void test_parser_1_basic(void) {
     free_arena(&ar);
 }
 
+void test_parser_3_basic(void) {
+    char * text =
+        "int main(void)\n"
+        "{\n"
+        "    return (2*3 + 4/2 - 5%3);\n"
+        "}\n";
+
+    arena     ar = make_arena(Mb(8));
+    str_store st = make_str_store(&ar, Mb(2), 10007);
+    parser    p  = make_parser(text, "test_parser_1_basic", &st, &ar);
+
+    ast * a = parse_program(&p);
+    assert(a);
+    assert(a->type == AST_PROGRAM);
+    assert(a->progr.fn->type == AST_FUNCTION);
+
+    // print_ast(stdout, a, 0);
+    free_arena(&ar);
+}
+
 void check_it_does_parse(char * text, char * source) {
     arena     ar = make_arena(Mb(8));
     str_store st = make_str_store(&ar, Mb(2), 101);

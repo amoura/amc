@@ -195,10 +195,10 @@ void print_ast(FILE * stream, ast * a, int indent) {
                             "op:   %s\n",
                             binop_type_to_str(a->expr.binop.op));
                     print_indent(stream, indent + 4);
-                    fprintf(stream, "lhs: ");
+                    fprintf(stream, "lhs: \n");
                     print_ast(stream, a->expr.binop.lhs, indent + 9);
                     print_indent(stream, indent + 4);
-                    fprintf(stream, "rhs: ");
+                    fprintf(stream, "rhs: \n");
                     print_ast(stream, a->expr.binop.rhs, indent + 9);
                     break;
                 default:

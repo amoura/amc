@@ -252,6 +252,7 @@ void basic_tests(void) {
     test_lexer_3_valid();
     test_ast_1();
     test_parser_1_basic();
+    test_parser_3_basic();
     test_parser_1_valid();
     test_parser_1_invalid();
     test_asm_tree();

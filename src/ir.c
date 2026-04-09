@@ -236,8 +236,15 @@ void test_ir_basic() {
     char * text =
         "int main(void)\n"
         "{\n"
-        "    return ~(-105);\n"
+        "    return (2*3 + 4/2 - 5%3);\n"
         "}\n";
+    /*
+       char * text =
+            "int main(void)\n"
+            "{\n"
+            "    return ~(-105);\n"
+            "}\n";
+    */
 
     arena     ar = make_arena(Mb(8));
     str_store st = make_str_store(&ar, Mb(2), 10007);
@@ -257,7 +264,7 @@ void test_ir_basic() {
     assert(ir->progr.fn->fn.name == intern_str(&st, "main"));
     assert(ir->progr.fn->fn.instrs.len > 0);
 
-    // print_ir_ast(stdout, ir, 0);
+    print_ir_ast(stdout, ir, 0);
 
     free_arena(&ar);
 }

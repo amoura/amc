@@ -32,9 +32,9 @@ typedef struct {
 } ir_return;
 
 typedef struct {
-    op_type op;
-    ir_val  src;
-    ir_val  dst;
+    unop_type op;
+    ir_val    src;
+    ir_val    dst;
 } ir_unop;
 
 typedef struct {

@@ -73,10 +73,10 @@ asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst) {
     return make_asm_instr_2(ASM_INSTR_SUB, src, dst);
 }
 
-asm_instr make_asm_unop_instr(op_type op, asm_operand src) {
+asm_instr make_asm_unop_instr(unop_type op, asm_operand src) {
     asm_instr instr = {0};
     instr.type      = ASM_INSTR_UNOP;
-    instr.op        = op;
+    instr.unary_op  = op;
     instr.src       = src;
     return instr;
 }

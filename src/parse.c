@@ -119,8 +119,8 @@ ast * parse_expr(parser * p) {
         }
         case TOK_MINUS:
         case TOK_TILDE: {
-            op_type op = (tok.type == TOK_MINUS) ? OP_NEG : OP_BIT_NEG;
-            ast *   a  = parse_expr(p);
+            unop_type op = (tok.type == TOK_MINUS) ? UNOP_NEG : UNOP_BIT_NEG;
+            ast *     a  = parse_expr(p);
             expect_ast(a, p, AST_EXPR);
             return new_expr_unop(p->ar, op, a);
         }
@@ -155,13 +155,13 @@ void test_parser_1_basic(void) {
     assert(a->progr.fn->fn.body->stmt.type == STMT_RETURN);
     assert(a->progr.fn->fn.body->stmt.ret.expr->type == AST_EXPR);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.type == EXPR_UNOP);
-    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.op == OP_BIT_NEG);
+    assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.op == UNOP_BIT_NEG);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->type ==
            AST_EXPR);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.type ==
            EXPR_UNOP);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.op ==
-           OP_NEG);
+           UNOP_NEG);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.expr
                ->type == AST_EXPR);
     assert(a->progr.fn->fn.body->stmt.ret.expr->expr.unop.expr->expr.unop.expr

@@ -19,8 +19,7 @@ ir_instr make_ir_return_instr(ir_val val) {
     return instr;
 }
 
-ir_instr make_ir_unop_instr(op_type op, ir_val src, ir_val dst) {
-    assert(is_unop(op));
+ir_instr make_ir_unop_instr(unop_type op, ir_val src, ir_val dst) {
     ir_instr instr = {0};
     instr.type     = IR_INSTR_UNARY;
     instr.unop.op  = op;
@@ -152,7 +151,7 @@ void print_ir_instr(FILE * stream, ir_instr instr, int indent) {
             break;
 
         case IR_INSTR_UNARY:
-            fprintf(stream, "Unary(%s, ", op_type_to_str(instr.unop.op));
+            fprintf(stream, "Unary(%s, ", unop_type_to_str(instr.unop.op));
             print_ir_val(stream, instr.unop.src);
             fprintf(stream, ", ");
             print_ir_val(stream, instr.unop.dst);

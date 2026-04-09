@@ -57,9 +57,12 @@ typedef struct {
 
 typedef struct {
     asm_instr_type type;
-    op_type        op;
-    asm_operand    src;
-    asm_operand    dst;
+    union {
+        unop_type  unary_op;
+        binop_type binary_op;
+    };
+    asm_operand src;
+    asm_operand dst;
 } asm_instr;
 
 def_dyn_arr(asm_instr);
@@ -88,7 +91,7 @@ asm_operand make_stack_asm_operand(int value);
 asm_instr make_asm_push_instr(asm_operand src);
 asm_instr make_asm_pop_instr(asm_operand dst);
 asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst);
-asm_instr make_asm_unop_instr(op_type op, asm_operand src);
+asm_instr make_asm_unop_instr(unop_type op, asm_operand src);
 asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst);
 asm_instr make_asm_ret_instr(void);
 

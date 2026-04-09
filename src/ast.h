@@ -26,16 +26,19 @@ typedef enum stmt_type {
 } stmt_type;
 
 // gen:enum
-typedef enum op_type {
-    OP_NEG,
-    OP_BIT_NEG,
+typedef enum unop_type {
+    UNOP_NEG,
+    UNOP_BIT_NEG,
+} unop_type;
 
-    OP_MINUS,
-    OP_PLUS,
-    OP_MUL,
-    OP_DIV,
-    OP_REM,
-} op_type;
+// gen:enum
+typedef enum binop_type {
+    BINOP_MINUS,
+    BINOP_PLUS,
+    BINOP_MUL,
+    BINOP_DIV,
+    BINOP_REM,
+} binop_type;
 
 // gen:enum
 typedef enum ast_error_type {
@@ -62,14 +65,14 @@ typedef struct {
 typedef struct ast_expr ast_expr;
 
 typedef struct {
-    op_type op;
-    ast *   expr;
+    unop_type op;
+    ast *     expr;
 } expr_unop;
 
 typedef struct {
-    op_type op;
-    ast *   lhs;
-    ast *   rhs;
+    binop_type op;
+    ast *      lhs;
+    ast *      rhs;
 } expr_binop;
 
 struct ast_expr {

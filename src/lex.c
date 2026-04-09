@@ -580,6 +580,8 @@ void check_it_does_lex(char * text) {
         fprintf(stderr, "failed to lex\n");
         exit(1);
     }
+
+    free_arena(&ar);
 }
 
 void test_lexer_1_invalid(void) {

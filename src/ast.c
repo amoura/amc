@@ -4,23 +4,6 @@ bool ast_is_err(ast * a) {
     return a->type == AST_ERR;
 }
 
-bool is_unop(op_type op) {
-    return op == OP_NEG || op == OP_BIT_NEG;
-}
-
-bool is_binop(op_type op) {
-    bool result = false;
-    switch (op) {
-        case OP_MINUS:
-        case OP_PLUS:
-        case OP_MUL:
-        case OP_DIV:
-        case OP_REM:
-            result = true;
-    }
-    return result;
-}
-
 const char * ast_type_to_msg(ast_type type) {
     switch (type) {
         case AST_PROGRAM:
@@ -114,10 +97,9 @@ ast * new_expr_constant(arena * ar, int value) {
     return a;
 }
 
-ast * new_expr_unop(arena * ar, op_type op, ast * expr) {
+ast * new_expr_unop(arena * ar, unop_type op, ast * expr) {
     assert(ar);
     assert(expr);
-    assert(is_unop(op));
 
     ast * a           = arena_alloc_type(ar, ast);
     a->type           = AST_EXPR;
@@ -127,11 +109,10 @@ ast * new_expr_unop(arena * ar, op_type op, ast * expr) {
     return a;
 }
 
-ast * new_expr_binop(arena * ar, op_type op, ast * lhs, ast * rhs) {
+ast * new_expr_binop(arena * ar, binop_type op, ast * lhs, ast * rhs) {
     assert(ar);
     assert(lhs);
     assert(rhs);
-    assert(is_binop(op));
 
     ast * a           = arena_alloc_type(ar, ast);
     a->type           = AST_EXPR;
@@ -186,10 +167,21 @@ void print_ast(FILE * stream, ast * a, int indent) {
                 case EXPR_UNOP:
                     fprintf(stream,
                             "op:   %s\n",
-                            op_type_to_str(a->expr.unop.op));
+                            unop_type_to_str(a->expr.unop.op));
                     print_indent(stream, indent + 4);
                     fprintf(stream, "expr: ");
                     print_ast(stream, a->expr.unop.expr, indent + 10);
+                    break;
+                case EXPR_BINOP:
+                    fprintf(stream,
+                            "op:   %s\n",
+                            binop_type_to_str(a->expr.binop.op));
+                    print_indent(stream, indent + 4);
+                    fprintf(stream, "lhs: ");
+                    print_ast(stream, a->expr.binop.lhs, indent + 9);
+                    print_indent(stream, indent + 4);
+                    fprintf(stream, "rhs: ");
+                    print_ast(stream, a->expr.binop.rhs, indent + 9);
                     break;
                 default:
                     assert(false);

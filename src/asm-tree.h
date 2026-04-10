@@ -12,8 +12,11 @@ typedef enum asm_instr_type {
     ASM_INSTR_NONE,
     ASM_INSTR_PUSH,
     ASM_INSTR_POP,
-    ASM_INSTR_SUB,
+    ASM_INSTR_SUB,  // TODO: this should be a BINOP
     ASM_INSTR_UNOP,
+    ASM_INSTR_BINOP,
+    ASM_INSTR_IDIV,
+    ASM_INSTR_CDQ,
     ASM_INSTR_MOV,
     ASM_INSTR_RET,
 } asm_instr_type;
@@ -27,12 +30,29 @@ typedef enum asm_operand_type {
     ASM_OPERAND_STACK,
 } asm_operand_type;
 
+// gen:enum
+typedef enum asm_unop_type {
+    ASM_UNOP_NONE,
+    ASM_UNOP_NEG,
+    ASM_UNOP_BIT_NEG,
+} asm_unop_type;
+
+// gen:enum
+typedef enum asm_binop_type {
+    ASM_BINOP_NONE,
+    ASM_BINOP_ADD,
+    ASM_BINOP_SUB,
+    ASM_BINOP_MUL,
+} asm_binop_type;
+
 typedef enum asm_reg {
     ASM_REG_NONE,
     ASM_REG_RBP,
     ASM_REG_RSP,
     ASM_REG_AX,
+    ASM_REG_DX,
     ASM_REG_R10,
+    ASM_REG_R11,
     ASM_REG_COUNT
 } asm_reg;
 
@@ -58,8 +78,8 @@ typedef struct {
 typedef struct {
     asm_instr_type type;
     union {
-        unop_type  unary_op;
-        binop_type binary_op;
+        asm_unop_type  unary_op;
+        asm_binop_type binary_op;
     };
     asm_operand src;
     asm_operand dst;
@@ -91,7 +111,7 @@ asm_operand make_stack_asm_operand(int value);
 asm_instr make_asm_push_instr(asm_operand src);
 asm_instr make_asm_pop_instr(asm_operand dst);
 asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst);
-asm_instr make_asm_unop_instr(unop_type op, asm_operand src);
+asm_instr make_asm_unop_instr(asm_unop_type op, asm_operand src);
 asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst);
 asm_instr make_asm_ret_instr(void);
 

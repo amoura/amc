@@ -1,6 +1,39 @@
 ///////////////////////////////////
 // Constructors
 
+asm_reg asm_reg_rbp = make_reg_asm_operand(ASM_REG_RBP);
+asm_reg asm_reg_rsp = make_reg_asm_operand(ASM_REG_RSP);
+asm_reg asm_reg_ax  = make_reg_asm_operand(ASM_REG_AX);
+asm_reg asm_reg_dx  = make_reg_asm_operand(ASM_REG_DX);
+asm_reg asm_reg_r10 = make_reg_asm_operand(ASM_REG_R10);
+asm_reg asm_reg_r11 = make_reg_asm_operand(ASM_REG_R11);
+
+asm_unop_type asm_unop_type_from_ir(unop_type ir_op) {
+    switch (ir_op) {
+        case UNOP_NEG:
+            return ASM_UNOP_NEG;
+        case UNOP_BIT_NEG:
+            return ASM_UNOP_BIT_NEG;
+        default:
+            assert(false);
+    }
+    return ASM_UNOP_NONE;
+}
+
+asm_binop_type asm_binop_type_from_ir(binop_type ir_op) {
+    switch (ir_op) {
+        case BINOP_ADD:
+            return ASM_BINOP_ADD;
+        case BINOP_SUB:
+            return ASM_BINOP_SUB;
+        case BINOP_MUL:
+            return ASM_BINOP_MUL;
+        default:
+            assert(false);
+    }
+    return ASM_BINOP_NONE;
+}
+
 bool asm_is_not_imm(asm_operand a) {
     return a.type != ASM_OPERAND_IMM;
 }
@@ -73,11 +106,22 @@ asm_instr make_asm_sub_instr(asm_operand src, asm_operand dst) {
     return make_asm_instr_2(ASM_INSTR_SUB, src, dst);
 }
 
-asm_instr make_asm_unop_instr(unop_type op, asm_operand src) {
+asm_instr make_asm_unop_instr(asm_unop_type op, asm_operand src) {
     asm_instr instr = {0};
     instr.type      = ASM_INSTR_UNOP;
     instr.unary_op  = op;
     instr.src       = src;
+    return instr;
+}
+
+asm_instr make_asm_binop_instr(asm_binop_type op,
+                               asm_operand    src,
+                               asm_operand    dst) {
+    asm_instr instr = {0};
+    instr.type      = ASM_INSTR_BINOP;
+    instr.binary_op = op;
+    instr.src       = src;
+    instr.dst       = dst;
     return instr;
 }
 
@@ -139,18 +183,15 @@ asm_function asm_function_from_ir(arena *      ar,
     asm_function fn = make_asm_function(ir_fn->fn.name);
 
     // Function prologue
+    asm_instr_arr_push(ar, &fn.instr_arr, make_asm_push_instr(asm_reg_rbp));
     asm_instr_arr_push(ar,
                        &fn.instr_arr,
-                       make_asm_push_instr(make_reg_asm_operand(ASM_REG_RBP)));
-    asm_instr_arr_push(ar,
-                       &fn.instr_arr,
-                       make_asm_mov_instr(make_reg_asm_operand(ASM_REG_RSP),
-                                          make_reg_asm_operand(ASM_REG_RBP)));
+                       make_asm_mov_instr(asm_reg_rsp, asm_reg_rbp));
     asm_instr_arr_push(
         ar,
         &fn.instr_arr,
         make_asm_sub_instr(make_imm_asm_operand(4 * emitter->next_index),
-                           make_reg_asm_operand(ASM_REG_RSP)));
+                           asm_reg_rsp));
 
     // Function body
     for_arr(i, ir_fn->fn.instrs) {
@@ -158,7 +199,7 @@ asm_function asm_function_from_ir(arena *      ar,
         switch (instr.type) {
             case IR_INSTR_RETURN: {
                 asm_operand src = asm_operand_from_ir_val(instr.ret.val);
-                asm_operand dst = make_reg_asm_operand(ASM_REG_AX);
+                asm_operand dst = asm_reg_ax;
                 asm_instr_arr_push(ar,
                                    &fn.instr_arr,
                                    make_asm_mov_instr(src, dst));
@@ -166,30 +207,78 @@ asm_function asm_function_from_ir(arena *      ar,
                 asm_instr_arr_push(
                     ar,
                     &fn.instr_arr,
-                    make_asm_mov_instr(make_reg_asm_operand(ASM_REG_RBP),
-                                       make_reg_asm_operand(ASM_REG_RSP)));
-                asm_instr_arr_push(
-                    ar,
-                    &fn.instr_arr,
-                    make_asm_pop_instr(make_reg_asm_operand(ASM_REG_RBP)));
+                    make_asm_mov_instr(asm_reg_rbp, asm_reg_rsp));
+                asm_instr_arr_push(ar,
+                                   &fn.instr_arr,
+                                   make_asm_pop_instr(asm_reg_rbp));
                 asm_instr_arr_push(ar, &fn.instr_arr, make_asm_ret_instr());
             } break;
 
             case IR_INSTR_UNOP: {
-                asm_operand src = asm_operand_from_ir_val(instr.unop.src);
-                asm_operand dst = asm_operand_from_ir_val(instr.unop.dst);
+                asm_operand   src = asm_operand_from_ir_val(instr.unop.src);
+                asm_operand   dst = asm_operand_from_ir_val(instr.unop.dst);
+                asm_unop_type op  = asm_unop_type_from_ir(instr.unop.op);
                 asm_instr_arr_push(ar,
                                    &fn.instr_arr,
                                    make_asm_mov_instr(src, dst));
                 asm_instr_arr_push(ar,
                                    &fn.instr_arr,
-                                   make_asm_unop_instr(instr.unop.op, dst));
+                                   make_asm_unop_instr(op, dst));
             } break;
+
+            case IR_INSTR_BINOP: {
+                asm_operand src1 = asm_operand_from_ir_val(instr.binop.src1);
+                asm_operand src2 = asm_operand_from_ir_val(instr.binop.src2);
+                asm_operand dst  = asm_operand_from_ir_val(instr.binop.dst);
+
+                switch (instr.binop.op) {
+                    case BINOP_ADD:
+                    case BINOP_SUB:
+                    case BINOP_MUL: {
+                        asm_binop_type op =
+                            asm_binop_type_from_ir(instr.binop.op);
+                        asm_instr_arr_push(ar,
+                                           &fn.instr_arr,
+                                           make_asm_mov_instr(src1, dst));
+                        asm_instr_arr_push(ar,
+                                           &fn.instr_arr,
+                                           make_asm_binop_instr(op, src2, dst));
+                        break;
+                    }
+
+                    case BINOP_REM:
+                    case BINOP_DIV: {
+                        asm_instr_arr_push(
+                            ar,
+                            &fn.instr_arr,
+                            make_asm_mov_instr(src1, asm_reg_ax));
+                        asm_instr_arr_push(ar,
+                                           &fn.instr_arr,
+                                           make_asm_cdq_instr());
+                        asm_instr_arr_push(ar,
+                                           &fn.instr_arr,
+                                           make_asm_idiv_instr(src2));
+
+                        asm_operand rres = asm_reg_ax;
+                        if (instr.binop.op == BINOP_REM) {
+                            rres = asm_reg_dx;
+                        }
+                        asm_instr_arr_push(ar,
+                                           &fn.instr_arr,
+                                           make_asm_mov_instr(rres, dst));
+                        break;
+                    }
+
+                    default:
+                        assert(false);
+                }
+                break;
+            }
 
             default:
                 assert(false);
-        }
-    }
+        }  // switch (instr.type)
+    }  // for_arr(i, ir_fn->fn.instrs)
 
     return fn;
 }

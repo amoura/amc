@@ -61,7 +61,9 @@ char * reg_strs[] = {
     "%%rbp",
     "%%rsp",
     "%%eax",
+    "%%edx",
     "%%r10d",
+    "%%r11d",
 };
 
 typedef struct asm_node asm_node;

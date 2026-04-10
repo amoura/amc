@@ -315,11 +315,15 @@ void asm_instr_replace_pseudo_regs(asm_instr * instr) {
     switch (instr->type) {
         case ASM_INSTR_SUB:
         case ASM_INSTR_MOV:
+        case ASM_INSTR_BINOP:
             asm_operand_replace_pseudo_reg(&instr->src);
             asm_operand_replace_pseudo_reg(&instr->dst);
             break;
 
+        case ASM_INSTR_PUSH:
+        case ASM_INSTR_POP:
         case ASM_INSTR_UNOP:
+        case ASM_INSTR_IDIV:
             asm_operand_replace_pseudo_reg(&instr->src);
             break;
 

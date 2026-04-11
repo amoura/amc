@@ -28,10 +28,10 @@ ir_instr make_ir_unop_instr(unop_type op, ir_val src, ir_val dst) {
     return instr;
 }
 
-ir_instr make_ir_binop_instr(unop_type op,
-                             ir_val    src1,
-                             ir_val    src2,
-                             ir_val    dst) {
+ir_instr make_ir_binop_instr(binop_type op,
+                             ir_val     src1,
+                             ir_val     src2,
+                             ir_val     dst) {
     ir_instr instr   = {0};
     instr.type       = IR_INSTR_BINOP;
     instr.binop.op   = op;
@@ -264,7 +264,7 @@ void test_ir_basic() {
     assert(ir->progr.fn->fn.name == intern_str(&st, "main"));
     assert(ir->progr.fn->fn.instrs.len > 0);
 
-    print_ir_ast(stdout, ir, 0);
+    // print_ir_ast(stdout, ir, 0);
 
     free_arena(&ar);
 }

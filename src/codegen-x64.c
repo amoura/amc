@@ -48,10 +48,10 @@ void asm_instr_codegen_x64(FILE * out, asm_instr instr) {
 
         case ASM_INSTR_UNOP:
             switch (instr.unary_op) {
-                case UNOP_NEG:
+                case ASM_UNOP_NEG:
                     asm_codegen_x64_instr_1(out, instr, "negl");
                     break;
-                case UNOP_BIT_NEG:
+                case ASM_UNOP_BIT_NEG:
                     asm_codegen_x64_instr_1(out, instr, "notl");
                     break;
                 default:

@@ -39,10 +39,10 @@ typedef struct {
 } ir_unop;
 
 typedef struct {
-    unop_type op;
-    ir_val    src1;
-    ir_val    src2;
-    ir_val    dst;
+    binop_type op;
+    ir_val     src1;
+    ir_val     src2;
+    ir_val     dst;
 } ir_binop;
 
 typedef struct {

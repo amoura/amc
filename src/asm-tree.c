@@ -1,12 +1,12 @@
 ///////////////////////////////////
 // Constructors
 
-asm_reg asm_reg_rbp = make_reg_asm_operand(ASM_REG_RBP);
-asm_reg asm_reg_rsp = make_reg_asm_operand(ASM_REG_RSP);
-asm_reg asm_reg_ax  = make_reg_asm_operand(ASM_REG_AX);
-asm_reg asm_reg_dx  = make_reg_asm_operand(ASM_REG_DX);
-asm_reg asm_reg_r10 = make_reg_asm_operand(ASM_REG_R10);
-asm_reg asm_reg_r11 = make_reg_asm_operand(ASM_REG_R11);
+#define asm_reg_rbp make_reg_asm_operand(ASM_REG_RBP)
+#define asm_reg_rsp make_reg_asm_operand(ASM_REG_RSP)
+#define asm_reg_ax  make_reg_asm_operand(ASM_REG_AX)
+#define asm_reg_dx  make_reg_asm_operand(ASM_REG_DX)
+#define asm_reg_r10 make_reg_asm_operand(ASM_REG_R10)
+#define asm_reg_r11 make_reg_asm_operand(ASM_REG_R11)
 
 asm_unop_type asm_unop_type_from_ir(unop_type ir_op) {
     switch (ir_op) {
@@ -22,9 +22,9 @@ asm_unop_type asm_unop_type_from_ir(unop_type ir_op) {
 
 asm_binop_type asm_binop_type_from_ir(binop_type ir_op) {
     switch (ir_op) {
-        case BINOP_ADD:
+        case BINOP_PLUS:
             return ASM_BINOP_ADD;
-        case BINOP_SUB:
+        case BINOP_MINUS:
             return ASM_BINOP_SUB;
         case BINOP_MUL:
             return ASM_BINOP_MUL;
@@ -123,6 +123,14 @@ asm_instr make_asm_binop_instr(asm_binop_type op,
     instr.src       = src;
     instr.dst       = dst;
     return instr;
+}
+
+asm_instr make_asm_idiv_instr(asm_operand src) {
+    return make_asm_instr_1(ASM_INSTR_IDIV, src);
+}
+
+asm_instr make_asm_cdq_instr(void) {
+    return make_asm_instr_0(ASM_INSTR_CDQ);
 }
 
 asm_instr make_asm_mov_instr(asm_operand src, asm_operand dst) {
@@ -232,8 +240,8 @@ asm_function asm_function_from_ir(arena *      ar,
                 asm_operand dst  = asm_operand_from_ir_val(instr.binop.dst);
 
                 switch (instr.binop.op) {
-                    case BINOP_ADD:
-                    case BINOP_SUB:
+                    case BINOP_PLUS:
+                    case BINOP_MINUS:
                     case BINOP_MUL: {
                         asm_binop_type op =
                             asm_binop_type_from_ir(instr.binop.op);

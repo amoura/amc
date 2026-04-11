@@ -7,12 +7,13 @@ typedef enum asm_node_type {
     ASM_NODE_PROGRAM,
 } asm_node_type;
 
+// TODO: ASM_INSTR_SUB should be a BINOP
 // gen:enum
 typedef enum asm_instr_type {
     ASM_INSTR_NONE,
     ASM_INSTR_PUSH,
     ASM_INSTR_POP,
-    ASM_INSTR_SUB,  // TODO: this should be a BINOP
+    ASM_INSTR_SUB,
     ASM_INSTR_UNOP,
     ASM_INSTR_BINOP,
     ASM_INSTR_IDIV,
@@ -53,7 +54,7 @@ typedef enum asm_reg {
     ASM_REG_DX,
     ASM_REG_R10,
     ASM_REG_R11,
-    ASM_REG_COUNT
+    ASM_REG_COUNT,
 } asm_reg;
 
 char * reg_strs[] = {

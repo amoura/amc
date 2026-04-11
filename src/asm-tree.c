@@ -364,14 +364,21 @@ void asm_node_fix_instrs(arena * ar, asm_node * node) {
     asm_instr_arr   new_instrs = {0};
     for_arrp(i, instrs) {
         asm_instr * instr = instrs->v + i;
-        if ((instr->type == ASM_INSTR_MOV ||
-             (instr->type == ASM_INSTR_BINOP &&
-              (instr->binary_op == ASM_BINOP_ADD ||
-               instr->binary_op == ASM_BINOP_SUB))) &&
+        if (instr->type == ASM_INSTR_MOV &&
             instr->src.type == ASM_OPERAND_STACK &&
             instr->dst.type == ASM_OPERAND_STACK) {
             asm_instr new_instr1 = *instr;
             new_instr1.dst       = asm_reg_r10;
+            asm_instr new_instr2 = *instr;
+            new_instr2.src       = asm_reg_r10;
+            asm_instr_arr_push(ar, &new_instrs, new_instr1);
+            asm_instr_arr_push(ar, &new_instrs, new_instr2);
+        } else if (instr->type == ASM_INSTR_BINOP &&
+                   (instr->binary_op == ASM_BINOP_ADD ||
+                    instr->binary_op == ASM_BINOP_SUB) &&
+                   instr->src.type == ASM_OPERAND_STACK &&
+                   instr->dst.type == ASM_OPERAND_STACK) {
+            asm_instr new_instr1 = make_asm_mov_instr(instr->src, asm_reg_r10);
             asm_instr new_instr2 = *instr;
             new_instr2.src       = asm_reg_r10;
             asm_instr_arr_push(ar, &new_instrs, new_instr1);

@@ -86,7 +86,8 @@ void asm_instr_codegen_x64(FILE * out, asm_instr instr) {
         case ASM_INSTR_MOV:
             // TODO: this is a temporary hack
             if (instr.src.type == ASM_OPERAND_REG &&
-                instr.src.reg != ASM_REG_R10) {
+                (instr.src.reg == ASM_REG_RBP ||
+                 instr.src.reg == ASM_REG_RSP)) {
                 asm_codegen_x64_instr_2(out, instr, "movq");
             } else {
                 asm_codegen_x64_instr_2(out, instr, "movl");
@@ -135,7 +136,8 @@ void test_codegen_x64_1(void) {
     char * text =
         "int main(void)\n"
         "{\n"
-        "    return -(~105);\n"
+        "    return ~2 + 3;\n"
+        // "    return -(~105);\n"
         "}\n";
 
     arena     ar = make_arena(Mb(8));

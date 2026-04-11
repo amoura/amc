@@ -130,7 +130,7 @@ ast * parse_factor(parser * p) {
         case TOK_MINUS:
         case TOK_TILDE: {
             unop_type op = (tok.type == TOK_MINUS) ? UNOP_NEG : UNOP_BIT_NEG;
-            ast *     a  = parse_expr(p);
+            ast *     a  = parse_factor(p);
             expect_ast(a, p, AST_EXPR);
             return new_expr_unop(p->ar, op, a);
         }

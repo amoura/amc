@@ -59,6 +59,30 @@ void asm_instr_codegen_x64(FILE * out, asm_instr instr) {
             }
             break;
 
+        case ASM_INSTR_BINOP:
+            switch (instr.binary_op) {
+                case ASM_BINOP_ADD:
+                    asm_codegen_x64_instr_2(out, instr, "addl");
+                    break;
+                case ASM_BINOP_SUB:
+                    asm_codegen_x64_instr_2(out, instr, "subl");
+                    break;
+                case ASM_BINOP_MUL:
+                    asm_codegen_x64_instr_2(out, instr, "imull");
+                    break;
+                default:
+                    assert(false);
+            }
+            break;
+
+        case ASM_INSTR_IDIV:
+            asm_codegen_x64_instr_1(out, instr, "idivl");
+            break;
+
+        case ASM_INSTR_CDQ:
+            fprintf(out, "    cdq\n");
+            break;
+
         case ASM_INSTR_MOV:
             // TODO: this is a temporary hack
             if (instr.src.type == ASM_OPERAND_REG &&

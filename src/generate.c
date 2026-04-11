@@ -79,7 +79,7 @@ int main(int num_args, char ** args) {
                 while (*ptr && (isalnum(*ptr) || *ptr == '_')) {
                     ptr++;
                 }
-                error_if(ptr == ptr0, "expect_ed identifier");
+                error_if(ptr == ptr0, "expected identifier");
                 char * enum_item =
                     arena_alloc_type_n(&ar, char, ptr - ptr0 + 1);
                 memcpy(enum_item, ptr0, ptr - ptr0);
@@ -87,13 +87,13 @@ int main(int num_args, char ** args) {
                 fprintf(out, "    case %s:\n", enum_item);
                 fprintf(out, "        return \"%s\";\n", enum_item);
                 ptr = expect_(ptr, ",");
-                error_if(ptr == NULL, "expect_ed a comma");
+                error_if(ptr == NULL, "expected a comma");
             }
             ptr = expect_(ptr, "}");
-            error_if(ptr == NULL, "expect_ed '}'");
+            error_if(ptr == NULL, "expected '}'");
             ptr = skip_whitespace_(ptr);
             ptr = expect_(ptr, enum_name);
-            error_if(ptr == NULL, "expect_ed enum name");
+            error_if(ptr == NULL, "expected enum name");
             ptr = skip_whitespace_(ptr);
             ptr = expect_(ptr, ";");
 

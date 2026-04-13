@@ -5,8 +5,21 @@
 typedef enum token_type {
     TOK_NONE,
 
+    TOK_PLUS,
+    TOK_PLUS_PLUS,
     TOK_MINUS,
     TOK_MINUS_MINUS,
+
+    TOK_OR,
+    TOK_BIT_OR,
+    TOK_AND,
+    TOK_BIT_AND,
+    TOK_LESS,
+    TOK_LESS_LESS,
+    TOK_GREATER,
+    TOK_GREATER_GREATER,
+
+    TOK_XOR,
     TOK_TILDE,
 
     TOK_OPEN_PAR,
@@ -17,7 +30,6 @@ typedef enum token_type {
 
     TOK_STAR,
     TOK_SLASH,
-    TOK_PLUS,
     TOK_PERCENT,
 
     TOK_INT,

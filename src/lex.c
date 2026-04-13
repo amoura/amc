@@ -337,9 +337,13 @@ token next_token(lexer * lex) {
             break;
 
         case '+':
-            // TODO: account for '++' as well
-            tok.type = TOK_PLUS;
             lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '-') {
+                lex->pos++;
+                tok.type = TOK_PLUS_PLUS;
+            } else {
+                tok.type = TOK_PLUS;
+            }
             break;
 
         case '-':
@@ -350,6 +354,51 @@ token next_token(lexer * lex) {
             } else {
                 tok.type = TOK_MINUS;
             }
+            break;
+
+        case '|':
+            lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '|') {
+                lex->pos++;
+                tok.type = TOK_OR;
+            } else {
+                tok.type = TOK_BIT_OR;
+            }
+            break;
+
+        case '&':
+            lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '&') {
+                lex->pos++;
+                tok.type = TOK_AND;
+            } else {
+                tok.type = TOK_BIT_AND;
+            }
+            break;
+
+        case '<':
+            lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '<') {
+                lex->pos++;
+                tok.type = TOK_LESS_LESS;
+            } else {
+                tok.type = TOK_LESS;
+            }
+            break;
+
+        case '>':
+            lex->pos++;
+            if (!lexer_at_eof(lex) && curr_char(lex) == '>') {
+                lex->pos++;
+                tok.type = TOK_GREATER_GREATER;
+            } else {
+                tok.type = TOK_GREATER;
+            }
+            break;
+
+        case '^':
+            tok.type = TOK_XOR;
+            lex->pos++;
             break;
 
         case '~':

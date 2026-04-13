@@ -40,6 +40,12 @@ typedef enum binop_type {
     BINOP_MUL,
     BINOP_DIV,
     BINOP_REM,
+
+    BINOP_BIT_OR,
+    BINOP_BIT_AND,
+    BINOP_XOR,
+    BINOP_LEFT_SHIFT,
+    BINOP_RIGHT_SHIFT,
 } binop_type;
 
 // gen:enum

@@ -173,8 +173,72 @@ ast * parse_expr45(parser * p) {
     return lhs;
 }
 
+ast * parse_expr40(parser * p) {
+    ast * lhs = parse_expr45(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_LESS_LESS || tok.type == TOK_GREATER_GREATER) {
+        consume_token(p);
+        ast * rhs = parse_expr45(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
+ast * parse_expr25(parser * p) {
+    ast * lhs = parse_expr40(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_BIT_AND) {
+        consume_token(p);
+        ast * rhs = parse_expr40(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
+ast * parse_expr20(parser * p) {
+    ast * lhs = parse_expr25(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_XOR) {
+        consume_token(p);
+        ast * rhs = parse_expr25(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
+ast * parse_expr15(parser * p) {
+    ast * lhs = parse_expr20(p);
+    expect_ast(lhs, p, AST_EXPR);
+
+    token tok = lex_peek(&p->lex);
+    while (tok.type == TOK_BIT_OR) {
+        consume_token(p);
+        ast * rhs = parse_expr20(p);
+        expect_ast(rhs, p, AST_EXPR);
+        binop_type op = binop_type_from_token_type(tok.type);
+        lhs           = new_expr_binop(p->ar, op, lhs, rhs);
+        tok           = lex_peek(&p->lex);
+    }
+    return lhs;
+}
+
 ast * parse_expr(parser * p) {
-    return parse_expr45(p);
+    return parse_expr15(p);
 }
 
 /////////////////////////////////////////////////////////

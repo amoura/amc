@@ -33,6 +33,18 @@ binop_type binop_type_from_token_type(token_type tok_type) {
             return BINOP_DIV;
         case TOK_PERCENT:
             return BINOP_REM;
+
+        case TOK_LESS_LESS:
+            return BINOP_LEFT_SHIFT;
+        case TOK_GREATER_GREATER:
+            return BINOP_RIGHT_SHIFT;
+        case TOK_BIT_AND:
+            return BINOP_BIT_AND;
+        case TOK_BIT_OR:
+            return BINOP_BIT_OR;
+        case TOK_XOR:
+            return BINOP_XOR;
+
         default:
             assert(false);
     }
